@@ -1,0 +1,13 @@
+package com.rookies4.every_moment;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class EveryMomentApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(EveryMomentApplication.class, args);
+	}
+
+}
