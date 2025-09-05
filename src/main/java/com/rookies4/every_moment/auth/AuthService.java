@@ -1,7 +1,7 @@
 package com.rookies4.every_moment.auth;
 
 
-import com.rookies4.every_moment.auth.dto.*;
+import com.rookies4.every_moment.auth.dto.AuthDTO.*;
 import com.rookies4.every_moment.common.ErrorCode;
 import com.rookies4.every_moment.security.JwtTokenProvider;
 import com.rookies4.every_moment.user.User;

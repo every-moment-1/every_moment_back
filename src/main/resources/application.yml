@@ -4,7 +4,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:mariadb://localhost:3307/dormdb?useUnicode=true&characterEncoding=utf8mb4&serverTimezone=Asia/Seoul
+    url: jdbc:mariadb://${DB_HOST:127.0.0.1}:${DB_PORT:3307}/${DB_DATABASE:school_db}
     username: dorm
     password: dormpw
     driver-class-name: org.mariadb.jdbc.Driver
@@ -20,7 +20,7 @@ spring:
     locations: classpath:db/migration
 
 jwt:
-  secret: ${JWT_SECRET:change-me-to-a-very-long-256bit-secret-change-me-change-me-change-me-1234567890}
+  secret: "change-me-to-a-very-long-256bit-secret-change-me-change-me-change-me-1234567890"
   access-exp-minutes: 60
   refresh-exp-days: 14
 

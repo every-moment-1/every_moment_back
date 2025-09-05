@@ -1,7 +1,7 @@
 package com.rookies4.every_moment.auth;
 
 
-import com.rookies4.every_moment.auth.dto.*;
+import com.rookies4.every_moment.auth.dto.AuthDTO.*;
 import com.rookies4.every_moment.common.BaseResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/api/school/auth")
 @RequiredArgsConstructor
 public class AuthController {
 

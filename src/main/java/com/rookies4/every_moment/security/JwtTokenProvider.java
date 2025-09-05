@@ -1,7 +1,7 @@
 package com.rookies4.every_moment.security;
 
 
-import com.rookies4.myspringboot3project.user.User;
+import com.rookies4.every_moment.user.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
