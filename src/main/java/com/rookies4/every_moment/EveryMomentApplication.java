@@ -1,4 +1,3 @@
-// FILE: src/main/java/com/rookies4/myspringboot3project/MyspringBoot3ProjectApplication.java
 package com.rookies4.every_moment;
 
 import com.rookies4.every_moment.user.User;
