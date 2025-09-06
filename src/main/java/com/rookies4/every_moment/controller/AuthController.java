@@ -1,8 +1,9 @@
-package com.rookies4.every_moment.auth;
+package com.rookies4.every_moment.controller;
 
 
-import com.rookies4.every_moment.auth.dto.AuthDTO.*;
-import com.rookies4.every_moment.common.BaseResponse;
+import com.rookies4.every_moment.controller.dto.AuthDTO.*;
+import com.rookies4.every_moment.service.AuthService;
+import com.rookies4.every_moment.exception.BaseResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

@@ -1,7 +1,8 @@
-package com.rookies4.every_moment.security;
+package com.rookies4.every_moment.security.jwt;
 
 
-import com.rookies4.every_moment.user.User;
+import com.rookies4.every_moment.entity.UserEntity;
+import com.rookies4.every_moment.security.service.JwtUserDetailsService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -16,7 +17,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
-import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -29,11 +29,11 @@ public class JwtTokenProvider {
     @Value("${jwt.secret}")
     private String secret;
 
-    @Value("${jwt.access-exp-minutes:60}")
-    private long accessExpMinutes;
+    @Value("${jwt.access-token-seconds:3600}")
+    private long accessTtlSec;
 
-    @Value("${jwt.refresh-exp-days:14}")
-    private long refreshExpDays;
+    @Value("${jwt.refresh-token-seconds:1209600}")
+    private long refreshTtlSec;
 
     private SecretKey getKey() {
         if (key == null) {
@@ -43,22 +43,21 @@ public class JwtTokenProvider {
         return key;
     }
 
-    public String generateAccessToken(User user) {
+    public String generateAccessToken(UserEntity user) {
         Instant now = Instant.now();
-        Instant exp = now.plus(accessExpMinutes, ChronoUnit.MINUTES);
+        Instant exp = now.plusSeconds(accessTtlSec);
         return Jwts.builder()
                 .subject(user.getEmail())
                 .claim("uid", user.getId())
-                .claim("role", user.getRole())
+                .claim("role", user.getRole()) // toString() 불필요
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(exp))
                 .signWith(getKey())
                 .compact();
     }
-
-    public String generateRefreshToken(User user) {
+    public String generateRefreshToken(UserEntity user) {
         Instant now = Instant.now();
-        Instant exp = now.plus(refreshExpDays, ChronoUnit.DAYS);
+        Instant exp = now.plusSeconds(refreshTtlSec);
         return Jwts.builder()
                 .subject(user.getEmail())
                 .claim("uid", user.getId())

@@ -1,7 +1,8 @@
-package com.rookies4.every_moment.user;
+package com.rookies4.every_moment.controller;
 
-import com.rookies4.every_moment.common.BaseResponse;
-import com.rookies4.every_moment.user.dto.MeResponse;
+import com.rookies4.every_moment.exception.BaseResponse;
+import com.rookies4.every_moment.entity.dto.UserDTO;
+import com.rookies4.every_moment.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -17,9 +18,9 @@ public class MeController {
     private final UserService userService;
 
     @GetMapping("/me")
-    public ResponseEntity<BaseResponse<MeResponse>> me(Authentication auth) {
+    public ResponseEntity<BaseResponse<UserDTO>> me(Authentication auth) {
         var u = userService.getCurrentUser(auth);
-        var res = new MeResponse(u.getId(), u.getUsername(), u.getEmail(), u.getSmoking(), u.getRole(), u.getActive(), u.getCreatedAt().toString());
+        var res = new UserDTO(u.getId(), u.getUsername(), u.getEmail(), u.getSmoking(), u.getRole(), u.getActive(), u.getCreatedAt().toString());
         return ResponseEntity.ok(BaseResponse.ok(res));
     }
 }

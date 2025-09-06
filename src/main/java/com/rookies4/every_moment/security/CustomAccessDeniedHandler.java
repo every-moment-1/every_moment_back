@@ -2,8 +2,8 @@ package com.rookies4.every_moment.security;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.rookies4.every_moment.common.ApiErrorResponse;
-import com.rookies4.every_moment.common.ErrorCode;
+import com.rookies4.every_moment.exception.ApiErrorResponse;
+import com.rookies4.every_moment.exception.ErrorCode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.MediaType;

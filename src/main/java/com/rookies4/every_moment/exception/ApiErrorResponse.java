@@ -1,4 +1,4 @@
-package com.rookies4.every_moment.common;
+package com.rookies4.every_moment.exception;
 
 import java.time.OffsetDateTime;
 import java.util.UUID;

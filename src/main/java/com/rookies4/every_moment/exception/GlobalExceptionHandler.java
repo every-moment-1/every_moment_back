@@ -1,4 +1,4 @@
-package com.rookies4.every_moment.common;
+package com.rookies4.every_moment.exception;
 
 
 import io.jsonwebtoken.ExpiredJwtException;
@@ -57,11 +57,30 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiErrorResponse> handleDuplicate(DataIntegrityViolationException ex) {
-        // best effort: decide field by message
-        String message = ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage();
-        ErrorCode ec = message != null && message.toLowerCase().contains("email") ? ErrorCode.DUPLICATE_EMAIL : ErrorCode.DUPLICATE_USERNAME;
-        var body = ApiErrorResponse.of(ec, ec == ErrorCode.DUPLICATE_EMAIL ? "email" : "username", null);
-        return ResponseEntity.status(ec.status).body(body);
+        String msg = ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage();
+        String lower = msg != null ? msg.toLowerCase() : "";
+        String constraint = null;
+        Throwable t = ex;
+        while (t != null) {
+            if (t instanceof org.hibernate.exception.ConstraintViolationException cve) {
+                constraint = cve.getConstraintName();
+                break;
+            }
+            t = t.getCause();
+        }
+        boolean emailHit =
+                (constraint != null && constraint.equalsIgnoreCase("uk_users_email"))
+                        || lower.contains("uk_users_email")
+                        || lower.contains("for key 'uk_users_email'")
+                        || lower.contains("email"); // 드라이버 메시지 백업 매칭
+
+        if (emailHit) {
+            var body = ApiErrorResponse.of(ErrorCode.DUPLICATE_EMAIL, "email", null);
+            return ResponseEntity.status(ErrorCode.DUPLICATE_EMAIL.status).body(body);
+        }
+
+        var body = ApiErrorResponse.of(ErrorCode.INTERNAL_SERVER_ERROR, null, null);
+        return ResponseEntity.status(ErrorCode.INTERNAL_SERVER_ERROR.status).body(body);
     }
 
     @ExceptionHandler(RuntimeException.class)

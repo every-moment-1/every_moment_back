@@ -1,4 +1,4 @@
-package com.rookies4.every_moment.auth.dto;
+package com.rookies4.every_moment.controller.dto;
 
 
 import jakarta.validation.constraints.Email;

@@ -1,5 +1,5 @@
 // FILE: src/main/java/com/rookies4/myspringboot3project/common/ErrorCode.java
-package com.rookies4.every_moment.common;
+package com.rookies4.every_moment.exception;
 
 import org.springframework.http.HttpStatus;
 
@@ -12,7 +12,6 @@ public enum ErrorCode {
 
     // VALIDATION & USER
     VALIDATION_ERROR("VALID_001", "입력값이 올바르지 않습니다", HttpStatus.BAD_REQUEST),
-    DUPLICATE_USERNAME("USER_001", "이미 존재하는 사용자명입니다", HttpStatus.CONFLICT),
     DUPLICATE_EMAIL("USER_002", "이미 존재하는 이메일입니다", HttpStatus.CONFLICT),
     USER_NOT_FOUND("USER_003", "사용자를 찾을 수 없습니다", HttpStatus.NOT_FOUND),
 

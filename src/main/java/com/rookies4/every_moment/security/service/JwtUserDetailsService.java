@@ -1,7 +1,7 @@
-package com.rookies4.every_moment.security;
+package com.rookies4.every_moment.security.service;
 
-import com.rookies4.every_moment.user.User;
-import com.rookies4.every_moment.user.UserRepository;
+import com.rookies4.every_moment.entity.UserEntity;
+import com.rookies4.every_moment.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.*;
@@ -17,7 +17,7 @@ public class JwtUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User u = users.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        UserEntity u = users.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found"));
         return new org.springframework.security.core.userdetails.User(
                 u.getEmail(),
                 u.getPasswordHash(),

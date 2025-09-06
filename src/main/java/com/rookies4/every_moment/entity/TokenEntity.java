@@ -1,7 +1,6 @@
-package com.rookies4.every_moment.auth;
+package com.rookies4.every_moment.entity;
 
 
-import com.rookies4.every_moment.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,14 +10,14 @@ import java.time.Instant;
 @Table(name="refresh_tokens")
 @Getter @Setter @Builder
 @NoArgsConstructor @AllArgsConstructor
-public class RefreshToken {
+public class TokenEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(optional = false, fetch = FetchType.LAZY)
     @JoinColumn(name="user_id")
-    private User user;
+    private UserEntity user;
 
     @Column(nullable=false, unique = true, length = 512)
     private String token;

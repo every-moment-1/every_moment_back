@@ -1,11 +1,12 @@
-package com.rookies4.every_moment.auth;
+package com.rookies4.every_moment.service;
 
-
-import com.rookies4.every_moment.auth.dto.AuthDTO.*;
-import com.rookies4.every_moment.common.ErrorCode;
-import com.rookies4.every_moment.security.JwtTokenProvider;
-import com.rookies4.every_moment.user.User;
-import com.rookies4.every_moment.user.UserRepository;
+import com.rookies4.every_moment.controller.dto.AuthDTO.*;
+import com.rookies4.every_moment.entity.TokenEntity;
+import com.rookies4.every_moment.repository.RefreshTokenRepository;
+import com.rookies4.every_moment.exception.ErrorCode;
+import com.rookies4.every_moment.security.jwt.JwtTokenProvider;
+import com.rookies4.every_moment.entity.UserEntity;
+import com.rookies4.every_moment.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -23,10 +24,9 @@ public class AuthService {
     private final RefreshTokenRepository refreshRepo;
 
     public RegisterResponse register(RegisterRequest req) {
-        if (users.existsByUsername(req.username())) throw new DataIntegrityViolationException("username duplicate");
         if (users.existsByEmail(req.email())) throw new DataIntegrityViolationException("email duplicate");
 
-        User u = User.builder()
+        UserEntity u = UserEntity.builder()
                 .username(req.username())
                 .email(req.email())
                 .passwordHash(encoder.encode(req.password()))
@@ -42,7 +42,7 @@ public class AuthService {
     }
 
     public LoginResponse login(LoginRequest req) {
-        User u = users.findByEmail(req.email()).orElseThrow(() -> new BadCredentialsException(ErrorCode.INVALID_CREDENTIALS.message));
+        UserEntity u = users.findByEmail(req.email()).orElseThrow(() -> new BadCredentialsException(ErrorCode.INVALID_CREDENTIALS.message));
         if (!u.getActive()) throw new BadCredentialsException(ErrorCode.INVALID_CREDENTIALS.message);
         if (!encoder.matches(req.password(), u.getPasswordHash())) throw new BadCredentialsException(ErrorCode.INVALID_CREDENTIALS.message);
 
@@ -50,10 +50,10 @@ public class AuthService {
         String refresh = jwt.generateRefreshToken(u);
 
         // save refresh
-        var rt = RefreshToken.builder()
+        var rt = TokenEntity.builder()
                 .user(u)
                 .token(refresh)
-                .expiry(Instant.now().plusSeconds(14L*24*3600))
+                .expiry(Instant.now().plusSeconds(1209600))
                 .revoked(false)
                 .build();
         refreshRepo.save(rt);
@@ -74,10 +74,10 @@ public class AuthService {
         // rotate: revoke old, save new
         token.setRevoked(true);
         refreshRepo.save(token);
-        refreshRepo.save(RefreshToken.builder()
+        refreshRepo.save(TokenEntity.builder()
                 .user(user)
                 .token(newRefresh)
-                .expiry(Instant.now().plusSeconds(14L*24*3600))
+                .expiry(Instant.now().plusSeconds(1209600))
                 .revoked(false)
                 .build());
 

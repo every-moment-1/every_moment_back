@@ -1,8 +1,7 @@
 package com.rookies4.every_moment;
 
-import com.rookies4.every_moment.user.User;
-import com.rookies4.every_moment.user.UserRepository;
-import lombok.RequiredArgsConstructor;
+import com.rookies4.every_moment.entity.UserEntity;
+import com.rookies4.every_moment.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -20,7 +19,7 @@ public class EveryMomentApplication {
     CommandLineRunner seed(UserRepository users, PasswordEncoder encoder) {
         return args -> {
             if (users.findByEmail("admin@example.com").isEmpty()) {
-                users.save(User.builder()
+                users.save(UserEntity.builder()
                         .username("admin")
                         .email("admin@example.com")
                         .passwordHash(encoder.encode("AdminPassw0rd!"))
@@ -30,7 +29,7 @@ public class EveryMomentApplication {
                         .build());
             }
             if (users.findByEmail("demo@example.com").isEmpty()) {
-                users.save(User.builder()
+                users.save(UserEntity.builder()
                         .username("demo")
                         .email("demo@example.com")
                         .passwordHash(encoder.encode("Passw0rd!"))

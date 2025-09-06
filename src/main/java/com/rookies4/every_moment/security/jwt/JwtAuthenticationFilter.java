@@ -1,4 +1,4 @@
-package com.rookies4.every_moment.security;
+package com.rookies4.every_moment.security.jwt;
 
 
 import jakarta.servlet.FilterChain;
