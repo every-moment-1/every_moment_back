@@ -8,5 +8,5 @@ GRANT ALL PRIVILEGES ON dormdb.* TO 'dorm'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
-파일 구조 정리 및 데이터베이스 연결, 회원가입까지 확인하였습니다.
-(username 중복시 오류 발생하여 수정 예정)
+파일 구조 정리 및 데이터베이스 연결, 회원가입까지 확인하였습니다.\
+(25.09.07 02:49   회원가입시 username 중복되면 오류 발생하여 보완 예정)
