@@ -32,6 +32,9 @@ public class UserEntity {
     private String passwordHash;
 
     @Column(nullable=false)
+    private Boolean gender;
+
+    @Column(nullable=false)
     private Boolean smoking;
 
     @Column(nullable=false, length=20)

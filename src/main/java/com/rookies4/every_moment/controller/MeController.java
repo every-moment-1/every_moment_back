@@ -20,7 +20,8 @@ public class MeController {
     @GetMapping("/me")
     public ResponseEntity<BaseResponse<UserDTO>> me(Authentication auth) {
         var u = userService.getCurrentUser(auth);
-        var res = new UserDTO(u.getId(), u.getUsername(), u.getEmail(), u.getSmoking(), u.getRole(), u.getActive(), u.getCreatedAt().toString());
+        var res = new UserDTO(u.getId(), u.getUsername(), u.getEmail(),
+                u.getSmoking(), u.getRole(), u.getActive(), u.getCreatedAt().toString());
         return ResponseEntity.ok(BaseResponse.ok(res));
     }
 }
