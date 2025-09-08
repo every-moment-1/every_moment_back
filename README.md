@@ -7,8 +7,9 @@
 * FLUSH PRIVILEGES;
 
 
-파일 구조 정리 및 데이터베이스 연결, 회원가입까지 확인하였습니다.\
-(25.09.07 02:49   회원가입시 username 중복되면 오류 발생하여 보완 예정)
+파일 구조 정리 및 데이터베이스 연결, 회원가입까지 확인하였습니다.   
+(25.09.07 02:49   회원가입시 username 중복되면 오류 발생하여 보완 예정)    
+(25.09.08 보완 완료)
 
 * gender추가 관련
 * V1이 이미 실행되면 오류가 남 
@@ -18,6 +19,7 @@
 
 
 POST 매핑     
+회원가입    
 /api/school/auth/register
 ```
 {
@@ -29,7 +31,8 @@ POST 매핑
 }
 ```
 POST  매핑     
-/api/school/auth/login
+로그인     
+/api/school/auth/login  
 
 ```
     {
@@ -39,6 +42,7 @@ POST  매핑
 ```
 
 GET 매핑  
+유저정보    
 /api/school/user
 
     Bearer Token: 예시)eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0
