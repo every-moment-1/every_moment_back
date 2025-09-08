@@ -16,17 +16,30 @@
     spring.flyway.enabled=true 여기서 FALSE로 수정
   * 해결방법 2. DB삭제했다 다시 생성
 
-  
-localhost:8080/api/school/auth/login
-파라미터 
+
+POST 매핑
+/api/school/auth/register
 ```
 {
-  "email": "tester5@example.com",
-  "password": "P@ssw0rd!"
+  "username": "test1",
+  "gender":"1",
+  "email": "tester@example.com",
+  "password": "P@ssw0rd!",
+  "smoking": false
 }
 ```
+POST  매핑     
+/api/school/auth/login
 
-localhost:8080/api/school/auth/me
+```
+    {
+      "email": "tester5@example.com",
+      "password": "P@ssw0rd!"
+    }
+```
+
+GET 매핑
+/api/school/user
 
     Bearer Token: 예시)eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ0ZXN0
     출력

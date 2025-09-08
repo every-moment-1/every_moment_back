@@ -17,7 +17,7 @@ public class MeController {
 
     private final UserService userService;
 
-    @GetMapping("/me")
+    @GetMapping("/user")
     public ResponseEntity<BaseResponse<UserDTO>> me(Authentication auth) {
         var u = userService.getCurrentUser(auth);
         var res = new UserDTO(u.getId(), u.getUsername(), u.getGender(), u.getEmail(), u.getSmoking(), u.getRole(), u.getActive(), u.getCreatedAt().toString());
