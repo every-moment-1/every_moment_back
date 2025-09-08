@@ -28,6 +28,7 @@ public class AuthService {
 
         UserEntity u = UserEntity.builder()
                 .username(req.username())
+                .gender(req.gender())
                 .email(req.email())
                 .passwordHash(encoder.encode(req.password()))
                 .smoking(Boolean.TRUE.equals(req.smoking()))
@@ -37,7 +38,7 @@ public class AuthService {
         u = users.save(u);
 
         return new RegisterResponse(
-                u.getId(), u.getUsername(), u.getEmail(), u.getSmoking(), u.getCreatedAt().toString()
+                u.getId(), u.getUsername(), u.getGender(), u.getEmail(), u.getSmoking(), u.getCreatedAt().toString()
         );
     }
 
@@ -58,7 +59,7 @@ public class AuthService {
                 .build();
         refreshRepo.save(rt);
 
-        var summary = new LoginResponse.UserSummary(u.getId(), u.getUsername(), u.getEmail(), u.getSmoking(), u.getRole());
+        var summary = new LoginResponse.UserSummary(u.getId(), u.getUsername(), u.getGender(), u.getEmail(), u.getSmoking(), u.getRole());
         return new LoginResponse(access, refresh, summary);
     }
 
