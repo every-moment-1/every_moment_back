@@ -13,6 +13,7 @@ target/
 .settings
 .springBeans
 .sts4-cache
+.zip
 
 ### IntelliJ IDEA ###
 .idea
