@@ -17,7 +17,7 @@
   * 해결방법 2. DB삭제했다 다시 생성
 
 
-POST 매핑     
+POST 매핑 
 /api/school/auth/register
 ```
 {
