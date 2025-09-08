@@ -17,16 +17,19 @@ public final class AuthDTO {
     public record RegisterRequest(
             @NotBlank @Pattern(regexp = "^[a-zA-Z0-9_]{3,20}$", message = "username 형식 오류")
             String username,
+            Integer gender,
             @NotBlank @Email
             String email,
             @NotBlank @Size(min = 8, message = "비밀번호는 8자 이상")
             String password,
+
             Boolean smoking
     ) {}
 
     public record RegisterResponse(
             Long id,
             String username,
+            Integer gender,
             String email,
             Boolean smoking,
             String createdAt
@@ -43,7 +46,7 @@ public final class AuthDTO {
             String refreshToken,
             UserSummary user
     ) {
-        public record UserSummary(Long id, String username, String email, Boolean smoking, String role) {}
+        public record UserSummary(Long id, String username, Integer gender, String email, Boolean smoking, String role) {}
     }
 
     // ===== Refresh =====

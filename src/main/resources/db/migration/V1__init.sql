@@ -1,8 +1,7 @@
-
-
 CREATE TABLE IF NOT EXISTS users (
   id BIGINT PRIMARY KEY AUTO_INCREMENT,
   username VARCHAR(40) NOT NULL,
+  gender INT NOT NULL,  -- 👈 [추가] 정수형 gender (0=남성, 1=여성)
   email VARCHAR(100) NOT NULL UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
   smoking TINYINT(1) NOT NULL DEFAULT 0,

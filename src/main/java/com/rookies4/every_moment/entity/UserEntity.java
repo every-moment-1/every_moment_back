@@ -25,6 +25,9 @@ public class UserEntity {
     @Column(nullable=false, length=40)
     private String username;
 
+    @Column(nullable=false)
+    private Integer gender;   // 0 = 남성, 1 = 여성  <-- [추가된 부분]
+
     @Column(nullable=false, length=100)
     private String email;
 
@@ -32,10 +35,7 @@ public class UserEntity {
     private String passwordHash;
 
     @Column(nullable=false)
-    private Boolean gender;
-
-    @Column(nullable=false)
-    private Boolean smoking;
+    private Boolean smoking;      // 0=false, 1=true
 
     @Column(nullable=false, length=20)
     private String role;
