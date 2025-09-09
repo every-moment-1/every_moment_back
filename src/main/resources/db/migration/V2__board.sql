@@ -1,0 +1,41 @@
+-- 게시글 테이블
+CREATE TABLE IF NOT EXISTS posts (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  author_id BIGINT NOT NULL, -- users.id (회원가입 이메일 기반)
+  category VARCHAR(20) NOT NULL DEFAULT 'FREE', -- 공지/자유/매칭/기타
+  title VARCHAR(200) NOT NULL,
+  content TEXT NOT NULL,
+  view_count INT NOT NULL DEFAULT 0,
+  deleted TINYINT(1) NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_post_author FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE INDEX idx_posts_category ON posts(category);
+CREATE INDEX idx_posts_author ON posts(author_id);
+
+-- 댓글 테이블
+CREATE TABLE IF NOT EXISTS comments (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  post_id BIGINT NOT NULL,   -- posts.id
+  author_id BIGINT NOT NULL, -- users.id
+  content TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_comment_post FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+  CONSTRAINT fk_comment_author FOREIGN KEY (author_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE INDEX idx_comments_post ON comments(post_id);
+
+-- 로그 테이블
+CREATE TABLE IF NOT EXISTS board_logs (
+  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  user_id BIGINT NOT NULL, -- users.id
+  action VARCHAR(50) NOT NULL, -- CREATE_POST, DELETE_COMMENT 등
+  target_type VARCHAR(20) NOT NULL, -- POST / COMMENT
+  target_id BIGINT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT fk_log_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
