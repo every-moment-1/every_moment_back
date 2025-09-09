@@ -62,3 +62,21 @@ GET 매핑
     "timestamp": "2025-09-08T14:15:45.454873600+09:00"
     }
     ```
+
+
+* 게시판 db
+* mysql -u dorm -p -h localhost dormdb
+* dormpw
+* board_logs , comments , posts
+
+postman 
+* hearder 설정
+* Content-Type: application/json
+* Authorization: Bearer <JWT 토큰>
+
+{
+"category": "FREE",
+"title": "첫 번째 게시글",
+"content": "게시판 API 테스트 글입니다."
+}
+
