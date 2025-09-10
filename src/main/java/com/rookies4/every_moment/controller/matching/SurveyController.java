@@ -15,6 +15,7 @@ public class SurveyController {
 
     private final SurveyService surveyService;
 
+    // 설문지 제출
     @PostMapping("/submit/{userId}")
     public ResponseEntity<SurveyResult> submitSurvey(@PathVariable Long userId, @RequestBody SurveyResult surveyResult) {
         if (userId == null) {
