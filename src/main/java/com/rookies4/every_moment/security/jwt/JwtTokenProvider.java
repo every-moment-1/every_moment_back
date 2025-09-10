@@ -82,4 +82,9 @@ public class JwtTokenProvider {
         var userDetails = userDetailsService.loadUserByUsername(email);
         return new UsernamePasswordAuthenticationToken(userDetails, token, userDetails.getAuthorities());
     }
+
+    public Long getUserId(String token) {
+        Claims claims = parse(token);
+        return claims.get("uid", Long.class);
+    }
 }
