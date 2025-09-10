@@ -87,7 +87,7 @@ public class MatchController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // 스왑 신청 처리
+    // 스왑 신청
     @PostMapping("/swap/{matchId}")
     public ResponseEntity<MatchResponseDTO> swapMatch(@PathVariable Long matchId) {
         matchService.swapMatch(matchId);

@@ -2,6 +2,7 @@ package com.rookies4.every_moment.controller.matching;
 
 import com.rookies4.every_moment.entity.dto.matchingDTO.MatchDTO;
 import com.rookies4.every_moment.entity.UserEntity;
+import com.rookies4.every_moment.service.matching.MatchRecommendationService;
 import com.rookies4.every_moment.service.matching.MatchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,19 +17,19 @@ import java.util.List;
 @RequestMapping("/api/match/recommendation")
 public class MatchRecommendationController {
 
-    private final MatchService matchService;
+    private final MatchRecommendationService matchRecommendationService;
 
     // 여러 명의 룸메이트 추천 목록 조회
     @GetMapping("/list")
     public ResponseEntity<List<MatchDTO>> getMatchingRecommendationsList(@AuthenticationPrincipal UserEntity user) {
-        List<MatchDTO> recommendations = matchService.getMatchingRecommendations(user);
+        List<MatchDTO> recommendations = matchRecommendationService.getMatchingRecommendations(user);
         return ResponseEntity.ok(recommendations);
     }
 
     // 1:1 룸메이트 추천 조회
     @GetMapping("/single")
     public ResponseEntity<MatchDTO> getMatchingRecommendation(@AuthenticationPrincipal UserEntity user) {
-        MatchDTO recommendation = matchService.getMatchingRecommendation(user);
+        MatchDTO recommendation = matchRecommendationService.getMatchingRecommendation(user);
 
         if (recommendation != null) {
             return ResponseEntity.ok(recommendation);
