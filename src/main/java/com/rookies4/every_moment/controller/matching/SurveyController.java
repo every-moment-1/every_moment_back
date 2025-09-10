@@ -15,19 +15,6 @@ public class SurveyController {
 
     private final SurveyService surveyService;
 
-    // 설문 제출
-//    @PostMapping("/submit/{userId}")
-//    public ResponseEntity<Void> submitSurvey(@PathVariable Long userId, @RequestBody SurveyResult surveyResult) {
-//        if (userId == null) {
-//            // userId가 없는 경우 Unauthorized(401) 반환
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-//        }
-//
-//        // 인증된 사용자 정보는 userId로 대체하여 서비스로 전달
-//        surveyService.submitSurveyResult(userId, surveyResult);  // 설문 결과를 서비스로 전달
-//        return ResponseEntity.status(HttpStatus.CREATED).build();  // 설문 제출 완료 응답
-//    }
-
     @PostMapping("/submit/{userId}")
     public ResponseEntity<SurveyResult> submitSurvey(@PathVariable Long userId, @RequestBody SurveyResult surveyResult) {
         if (userId == null) {
@@ -39,7 +26,6 @@ public class SurveyController {
         SurveyResult savedSurveyResult = surveyService.submitSurveyResult(userId, surveyResult);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedSurveyResult);   // 설문 제출 완료 응답
     }
-
 
 
     // 설문 결과 조회
