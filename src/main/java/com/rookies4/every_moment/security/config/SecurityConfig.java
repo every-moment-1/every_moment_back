@@ -42,7 +42,7 @@ public class SecurityConfig {
                                 "/api/school/auth/**",
                                 "/v3/api-docs/**", "/swagger-ui/**",
                                 "/actuator/health",
-                                "/api/survey/submit/**"
+                                "/api/survey/submit/**", "/api/preferences/**"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

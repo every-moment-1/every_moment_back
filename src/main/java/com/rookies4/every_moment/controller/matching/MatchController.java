@@ -19,7 +19,6 @@ public class MatchController {
 
     private final MatchService matchService;
 
-
     // 매칭 제안 처리
     @PostMapping("/propose")
     public ResponseEntity<Void> proposeMatch(@RequestBody MatchProposalDTO proposal) {
