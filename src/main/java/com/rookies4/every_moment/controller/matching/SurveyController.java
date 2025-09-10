@@ -1,5 +1,6 @@
 package com.rookies4.every_moment.controller.matching;
 
+import com.rookies4.every_moment.controller.dto.SurveyResultResponseDTO;
 import com.rookies4.every_moment.entity.matching.SurveyResult;
 import com.rookies4.every_moment.service.matching.SurveyService;
 import lombok.RequiredArgsConstructor;
@@ -40,37 +41,24 @@ public class SurveyController {
     }
 
 
-//설문 제출
-//    @PostMapping("/submit/{userId}")
-//    public ResponseEntity<Void> submitSurvey(@PathVariable Long userId, @RequestBody SurveyResult surveyResult) {
-//        if (userId == null) {
-//            // userId가 없는 경우 Unauthorized(401) 반환
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-//        }
-//
-//        // 인증된 사용자 정보는 userId로 대체하여 서비스로 전달
-//        surveyService.submitSurveyResult(userId, surveyResult);  // 설문 결과를 서비스로 전달
-//        return ResponseEntity.status(HttpStatus.CREATED).build();  // 설문 제출 완료 응답
-//    }
-//
-
-//    @PreAuthorize("hasRole('USER')")
-//    @PostMapping("/submit")
-//    public ResponseEntity<Void> submitSurvey(Authentication authentication, @RequestBody SurveyResult surveyResult) {
-//        if (authentication == null || authentication.getPrincipal() == null) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null); // 인증되지 않음
-//        }
-//
-//        UserEntity user = (UserEntity) authentication.getPrincipal(); // 인증된 사용자 가져오기
-//        surveyService.submitSurveyResult(user.getId(), surveyResult);
-//        return ResponseEntity.status(HttpStatus.CREATED).build();
-
 
     // 설문 결과 조회
     @GetMapping("/{userId}")
-    public ResponseEntity<SurveyResult> getSurveyResult(@PathVariable Long userId) {
+    public ResponseEntity<SurveyResultResponseDTO> getSurveyResult(@PathVariable Long userId) {
         SurveyResult surveyResult = surveyService.getSurveyResult(userId);
-        return ResponseEntity.ok(surveyResult);
+
+        // DTO 변환
+        SurveyResultResponseDTO response = new SurveyResultResponseDTO(
+                surveyResult.getId(),
+                surveyResult.getUser().getId(), // user 정보 사용
+                surveyResult.getSleepTime(),
+                surveyResult.getCleanliness(),
+                surveyResult.getNoiseSensitivity(),
+                surveyResult.getHeight(),
+                surveyResult.getRoomTemp()
+        );
+
+        return ResponseEntity.ok(response);
     }
 }
 
