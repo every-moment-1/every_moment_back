@@ -1,5 +1,6 @@
 package com.rookies4.every_moment.service.matching;
 
+import com.rookies4.every_moment.controller.dto.MatchResponseDTO;
 import com.rookies4.every_moment.entity.dto.matchingDTO.MatchDTO;
 import com.rookies4.every_moment.entity.dto.matchingDTO.MatchProposalDTO;
 import com.rookies4.every_moment.entity.UserEntity;
@@ -80,31 +81,7 @@ public class MatchService {
         return recommendations.stream().limit(10).collect(Collectors.toList());
     }
 
-    // 실제 매칭 제안 시 DB에 저장
-    @Transactional
-    public void proposeMatch(Long userId, MatchProposalDTO proposal) {
-        Optional<UserEntity> proposer = userRepository.findById(proposal.getProposerId());
-        Optional<UserEntity> targetUser = userRepository.findById(proposal.getTargetUserId());
 
-        if (proposer.isPresent() && targetUser.isPresent()) {
-            // 이미 PENDING 상태의 매칭이 존재하는지 확인
-            Optional<Match> existingMatch = matchRepository.findByUser1AndUser2AndStatus(proposer.get(), targetUser.get(), MatchStatus.PENDING);
-
-            if (existingMatch.isPresent()) {
-                throw new IllegalArgumentException("이미 " + proposer.get().getUsername() + "와 " + targetUser.get().getUsername() + " 간에 PENDING 상태의 매칭이 존재합니다.");
-            }
-
-            // 새로운 매칭 생성
-            Match match = new Match();
-            match.setUser1(proposer.get());
-            match.setUser2(targetUser.get());
-            match.setScore(0); // 점수 초기화
-            match.setStatus(MatchStatus.PENDING); // 상태는 기본적으로 PENDING
-            matchRepository.save(match);
-        } else {
-            throw new IllegalArgumentException("사용자를 찾을 수 없습니다.");
-        }
-    }
 
     // 1:1 룸메이트 추천만 반환 (추천 결과 DB 저장 포함)
     public MatchDTO getMatchingRecommendation(UserEntity user) {
@@ -127,9 +104,37 @@ public class MatchService {
         return firstRecommendation;
     }
 
+    // 실제 매칭 제안 시 DB에 저장
+    @Transactional
+    public Long proposeMatch(Long userId, MatchProposalDTO proposal) {
+        Optional<UserEntity> proposer = userRepository.findById(proposal.getProposerId());
+        Optional<UserEntity> targetUser = userRepository.findById(proposal.getTargetUserId());
+
+        if (proposer.isPresent() && targetUser.isPresent()) {
+            // 이미 PENDING 상태의 매칭이 존재하는지 확인
+            Optional<Match> existingMatch = matchRepository.findByUser1AndUser2AndStatus(proposer.get(), targetUser.get(), MatchStatus.PENDING);
+
+            if (existingMatch.isPresent()) {
+                throw new IllegalArgumentException("이미 " + proposer.get().getUsername() + "와 " + targetUser.get().getUsername() + " 간에 PENDING 상태의 매칭이 존재합니다.");
+            }
+
+            // 새로운 매칭 생성
+            Match match = new Match();
+            match.setUser1(proposer.get());
+            match.setUser2(targetUser.get());
+            match.setScore(0); // 점수 초기화
+            match.setStatus(MatchStatus.PENDING); // 상태는 기본적으로 PENDING
+            matchRepository.save(match);
+
+            // 매칭 ID를 반환
+            return match.getId(); // 매칭 ID를 반환
+        } else {
+            throw new IllegalArgumentException("사용자를 찾을 수 없습니다.");
+        }
+    }
 
 
-    // 매칭 제안 처리
+    // 매칭 수락 처리
     @Transactional
     public void acceptMatch(Long matchId) {
         Optional<Match> matchOptional = matchRepository.findById(matchId);

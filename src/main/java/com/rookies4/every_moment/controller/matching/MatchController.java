@@ -1,9 +1,8 @@
 package com.rookies4.every_moment.controller.matching;
 
+import com.rookies4.every_moment.controller.dto.MatchResponseDTO;
 import com.rookies4.every_moment.entity.UserEntity;
 import com.rookies4.every_moment.entity.dto.matchingDTO.MatchProposalDTO;
-import com.rookies4.every_moment.entity.dto.matchingDTO.MatchResultDTO;
-import com.rookies4.every_moment.entity.matching.MatchStatus;
 import com.rookies4.every_moment.service.matching.MatchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,50 +18,106 @@ public class MatchController {
 
     private final MatchService matchService;
 
-    // 매칭 제안 처리
+    // 매칭 제안
     @PostMapping("/propose")
-    public ResponseEntity<Void> proposeMatch(@RequestBody MatchProposalDTO proposal) {
-        matchService.proposeMatch(proposal.getProposerId(), proposal);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<MatchResponseDTO> proposeMatch(@RequestBody MatchProposalDTO proposal) {
+        // 매칭 제안 후 매칭 ID 반환
+        Long matchId = matchService.proposeMatch(proposal.getProposerId(), proposal);
+
+        // 매칭 제안 성공 메시지 응답
+        MatchResponseDTO response = new MatchResponseDTO(
+                matchId,  // 매칭 ID
+                proposal.getProposerId(),  // 제안자 ID
+                proposal.getTargetUserId(),  // 대상자 ID
+                "PENDING",  // 상태: PENDING으로 설정 (추후 상태 업데이트 시 변경 가능)
+                "매칭이 제안되었습니다."  // 제안 메시지
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     // 매칭 수락
     @PostMapping("/accept/{matchId}")
-    public ResponseEntity<Void> acceptMatch(@PathVariable Long matchId) {
+    public ResponseEntity<MatchResponseDTO> acceptMatch(@PathVariable Long matchId) {
         matchService.acceptMatch(matchId);
-        return ResponseEntity.ok().build();
+
+        // 매칭 수락 성공 메시지 응답
+        MatchResponseDTO response = new MatchResponseDTO(
+                matchId,
+                null,  // proposerId는 필요없음
+                null,  // targetUserId는 필요없음
+                "ACCEPTED",
+                "매칭이 수락되었습니다."
+        );
+        return ResponseEntity.ok(response);
     }
 
     // 매칭 거절
     @PostMapping("/reject/{matchId}")
-    public ResponseEntity<Void> rejectMatch(@PathVariable Long matchId) {
+    public ResponseEntity<MatchResponseDTO> rejectMatch(@PathVariable Long matchId) {
         matchService.rejectMatch(matchId);
-        return ResponseEntity.ok().build();
+
+        // 매칭 거절 성공 메시지 응답
+        MatchResponseDTO response = new MatchResponseDTO(
+                matchId,
+                null,  // proposerId는 필요없음
+                null,  // targetUserId는 필요없음
+                "REJECTED",
+                "매칭이 거절되었습니다."
+        );
+        return ResponseEntity.ok(response);
     }
 
-    // 기존 매칭이 거절된 경우 새로운 매칭 신청
+    // 새로운 매칭 신청
     @PostMapping("/request-new-match/{matchId}")
-    public ResponseEntity<Void> requestNewMatch(
+    public ResponseEntity<MatchResponseDTO> requestNewMatch(
             @PathVariable Long matchId,
             @AuthenticationPrincipal UserEntity user) {
 
-        // 새로운 매칭 신청 로직 호출
         matchService.requestNewMatch(user.getId(), matchId);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+
+        // 새로운 매칭 신청 성공 메시지 응답
+        MatchResponseDTO response = new MatchResponseDTO(
+                matchId,
+                null,
+                null,
+                "PENDING",
+                "새로운 매칭이 신청되었습니다."
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // 스왑 신청 처리 (매칭 상태가 REJECTED일 때만 스왑 신청 가능)
+    // 스왑 신청 처리
     @PostMapping("/swap/{matchId}")
-    public ResponseEntity<Void> swapMatch(@PathVariable Long matchId) {
-        matchService.swapMatch(matchId);  // 스왑 신청 로직 호출
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    public ResponseEntity<MatchResponseDTO> swapMatch(@PathVariable Long matchId) {
+        matchService.swapMatch(matchId);
+
+        // 스왑 신청 성공 메시지 응답
+        MatchResponseDTO response = new MatchResponseDTO(
+                matchId,
+                null,
+                null,
+                "SWAP_REQUESTED",
+                "스왑 신청이 처리되었습니다."
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
+    // 관리자가 새로운 매칭
     @PreAuthorize("hasRole('ADMIN')")
-    // 관리자가 새로운 매칭을 제안 (스왑 신청 후에만 가능)
     @PostMapping("/propose-new/{proposerId}/{targetUserId}")
-    public ResponseEntity<Void> proposeNewMatch(@PathVariable Long proposerId, @PathVariable Long targetUserId) {
+    public ResponseEntity<MatchResponseDTO> proposeNewMatch(@PathVariable Long proposerId, @PathVariable Long targetUserId) {
         matchService.proposeNewMatch(proposerId, targetUserId);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+
+        // 새로운 매칭 제안 성공 메시지 응답
+        MatchResponseDTO response = new MatchResponseDTO(
+                null, // 여기서는 필요 없을 수 있음
+                proposerId,
+                targetUserId,
+                "PENDING",
+                "새로운 매칭을 제안했습니다."
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
 }
