@@ -3,17 +3,16 @@ package com.rookies4.every_moment.service.matching;
 import com.rookies4.every_moment.controller.dto.PreferenceResponseDTO;
 import com.rookies4.every_moment.entity.matching.Preference;
 import com.rookies4.every_moment.entity.matching.SurveyResult;
-import com.rookies4.every_moment.repository.matching.PreferencesRepository;
+import com.rookies4.every_moment.repository.matching.PreferenceRepository;
 import com.rookies4.every_moment.repository.matching.SurveyResultRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-public class PreferencesService {
+public class PreferenceService {
 
-    private final PreferencesRepository preferencesRepository; // PreferencesRepository
+    private final PreferenceRepository preferencesRepository; // PreferencesRepository
     private final SurveyResultRepository surveyResultRepository; // SurveyResultRepository
     private final MatchScorerService matchScorerService; // 점수 계산 서비스
 

@@ -1,8 +1,7 @@
 package com.rookies4.every_moment.controller.matching;
 
 import com.rookies4.every_moment.controller.dto.PreferenceResponseDTO;
-import com.rookies4.every_moment.entity.matching.Preference;
-import com.rookies4.every_moment.service.matching.PreferencesService;
+import com.rookies4.every_moment.service.matching.PreferenceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -11,9 +10,9 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/preferences")
 @RequiredArgsConstructor
-public class PreferencesController {
+public class PreferenceController {
 
-    private final PreferencesService preferencesService;
+    private final PreferenceService preferencesService;
 
     // 선호도 계산 후 저장하는 API
     @PostMapping("/calculate/{userId}")
