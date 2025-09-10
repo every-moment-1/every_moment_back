@@ -1,5 +1,6 @@
 package com.rookies4.every_moment.entity;
 
+import com.rookies4.every_moment.entity.matching.Preference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
@@ -42,6 +43,11 @@ public class UserEntity {
 
     @Column(nullable=false)
     private Boolean active;
+
+    // 사용자 Preference 관계 (1:1 관계, nullable 설정)
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "preference_id", nullable = true)  // 외래 키를 설정하고, null 허용
+    private Preference preference;
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
