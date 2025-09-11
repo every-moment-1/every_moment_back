@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
@@ -20,4 +21,7 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
                or (r.userA.id = :b and r.userB.id = :a)
             """)
     Optional<ChatRoom> findOneOnOne(@Param("a") Long a, @Param("b") Long b);
+
+    @Query("select r from ChatRoom r where r.userA.id = :userId or r.userB.id = :userId")
+    List<ChatRoom> findByParticipantId(@Param("userId") Long userId);
 }
