@@ -21,23 +21,25 @@ public class MatchController {
     private final MatchService matchService;
     private final MatchRepository matchRepository;  // MatchRepository 주입
 
-    // 매칭 제안
     @PostMapping("/propose")
     public ResponseEntity<MatchResponseDTO> proposeMatch(@RequestBody MatchProposalDTO proposal) {
         // 매칭 제안 후 매칭 ID 반환
         Long matchId = matchService.proposeMatch(proposal.getProposerId(), proposal);
 
         // 매칭 제안 성공 메시지 응답
-        Match match = matchRepository.findById(matchId).orElseThrow(() -> new IllegalArgumentException("매칭을 찾을 수 없습니다."));
+        Match match = matchRepository.findById(matchId)
+                .orElseThrow(() -> new IllegalArgumentException("매칭을 찾을 수 없습니다."));
+
+        // 매칭의 점수 값들
         MatchResponseDTO response = new MatchResponseDTO(
-                matchId,  // 매칭 ID
+                matchId,
                 proposal.getProposerId(),
                 proposal.getTargetUserId(),
-                match.getUser1Score(),  // user1 점수
-                match.getUser2Score(),  // user2 점수
-                match.getSimilarityScore(),  // 유사도 점수 포함
-                match.getStatus().name(),  // 상태: PENDING
-                "매칭이 제안되었습니다."  // 메시지
+                match.getUser1_Score(),
+                match.getUser2_Score(),
+                match.getSimilarityScore(),
+                match.getStatus().name(),
+                "매칭이 제안되었습니다."
         );
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
@@ -52,11 +54,11 @@ public class MatchController {
         Match match = matchRepository.findById(matchId).orElseThrow(() -> new IllegalArgumentException("매칭을 찾을 수 없습니다."));
         MatchResponseDTO response = new MatchResponseDTO(
                 matchId,
-                null,  // proposerId는 필요없음
-                null,  // targetUserId는 필요없음
-                match.getUser1Score(),  // user1 점수
-                match.getUser2Score(),  // user2 점수
-                match.getSimilarityScore(),  // 유사도 점수
+                null,
+                null,
+                match.getUser1_Score(),
+                match.getUser2_Score(),
+                match.getSimilarityScore(),
                 "ACCEPTED",
                 "매칭이 수락되었습니다."
         );
@@ -72,11 +74,11 @@ public class MatchController {
         Match match = matchRepository.findById(matchId).orElseThrow(() -> new IllegalArgumentException("매칭을 찾을 수 없습니다."));
         MatchResponseDTO response = new MatchResponseDTO(
                 matchId,
-                null,  // proposerId는 필요없음
-                null,  // targetUserId는 필요없음
-                match.getUser1Score(),  // user1 점수
-                match.getUser2Score(),  // user2 점수
-                match.getSimilarityScore(),  // 유사도 점수
+                null,
+                null,
+                match.getUser1_Score(),
+                match.getUser2_Score(),
+                match.getSimilarityScore(),
                 "REJECTED",
                 "매칭이 거절되었습니다."
         );
@@ -97,8 +99,8 @@ public class MatchController {
                 matchId,
                 null,
                 null,
-                match.getUser1Score(),
-                match.getUser2Score(),
+                match.getUser1_Score(),
+                match.getUser2_Score(),
                 match.getSimilarityScore(),
                 "PENDING",
                 "새로운 매칭이 신청되었습니다."
@@ -117,8 +119,8 @@ public class MatchController {
                 matchId,
                 null,
                 null,
-                match.getUser1Score(),
-                match.getUser2Score(),
+                match.getUser1_Score(),
+                match.getUser2_Score(),
                 match.getSimilarityScore(),
                 "SWAP_REQUESTED",
                 "스왑 신청이 처리되었습니다."
@@ -138,12 +140,12 @@ public class MatchController {
                 .orElseThrow(() -> new IllegalArgumentException("매칭을 찾을 수 없습니다."));
 
         MatchResponseDTO response = new MatchResponseDTO(
-                match.getId(),  // 새로운 매칭의 ID
+                match.getId(),
                 proposerId,
                 targetUserId,
-                match.getUser1Score(),  // user1 점수
-                match.getUser2Score(),  // user2 점수
-                match.getSimilarityScore(),  // 유사도 점수
+                match.getUser1_Score(),
+                match.getUser2_Score(),
+                match.getSimilarityScore(),
                 "PENDING",
                 "새로운 매칭을 제안했습니다."
         );

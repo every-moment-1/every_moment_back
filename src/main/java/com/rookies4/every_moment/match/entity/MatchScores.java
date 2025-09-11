@@ -1,48 +1,37 @@
 package com.rookies4.every_moment.match.entity;
 
-import com.rookies4.every_moment.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "matches")
+@Table(name = "match_scores")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@EntityListeners(AuditingEntityListener.class)
-public class Match {
+public class MatchScores {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user1_id", nullable = false)
-    private UserEntity user1;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user2_id", nullable = false)
-    private UserEntity user2;
+    @JoinColumn(name = "match_id", nullable = false)
+    private Match match;  // 매칭과의 관계 설정
 
     @Column(nullable = false)
-    private Integer user1_Score;  // user1의 점수
+    private Integer user1_Score;  // user1 점수
 
     @Column(nullable = false)
-    private Integer user2_Score;  // user2의 점수
+    private Integer user2_Score;  // user2 점수
 
     @Column(nullable = false)
-    private Double similarityScore;  // 유사도 점수 추가
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private MatchStatus status;  // 매칭 상태 (PENDING, ACCEPTED, REJECTED 등)
+    private Double similarityScore;  // 유사도 점수
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)

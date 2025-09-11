@@ -2,10 +2,13 @@ package com.rookies4.every_moment.match.repository;
 
 import com.rookies4.every_moment.match.entity.SurveyResult;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
+
+@Repository
 public interface SurveyResultRepository extends JpaRepository<SurveyResult, Long> {
     Optional<SurveyResult> findByUserId(Long userId);
 

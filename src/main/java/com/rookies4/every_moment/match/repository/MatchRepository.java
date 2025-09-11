@@ -4,10 +4,13 @@ import com.rookies4.every_moment.entity.UserEntity;
 import com.rookies4.every_moment.match.entity.Match;
 import com.rookies4.every_moment.match.entity.MatchStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
 
+
+@Repository
 public interface MatchRepository extends JpaRepository<Match, Long> {
     // 특정 사용자와 매칭된 모든 매칭 조회
     List<Match> findByUser1_Id(Long userId);

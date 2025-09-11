@@ -132,7 +132,6 @@ public class MatchScorerService {
     }
 
 
-
     // Recommendation에 계산
 
     public double calculatePreferenceScore(SurveyResult userSurveyResult, SurveyResult matchUserSurveyResult) {
