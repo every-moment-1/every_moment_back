@@ -12,6 +12,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ChatService {
@@ -59,5 +61,10 @@ public class ChatService {
         ChatRoom room = roomRepo.findById(roomId).orElseThrow();
         if (!room.isParticipant(userId)) throw new SecurityException("Not a member of this room");
         return room;
+    }
+
+    @Transactional(readOnly = true)
+    public List<ChatRoom> getUserChatRooms(Long userId) {
+        return roomRepo.findByParticipantId(userId);
     }
 }

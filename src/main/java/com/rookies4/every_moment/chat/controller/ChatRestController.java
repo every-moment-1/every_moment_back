@@ -13,6 +13,9 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @RestController
 @RequestMapping("/api/chat")
 @RequiredArgsConstructor
@@ -47,6 +50,15 @@ public class ChatRestController {
                         m.getCreatedAt().toString()));
     }
 
+
+    @GetMapping("/rooms")
+    public List<RoomRes> getRooms(HttpServletRequest req) {
+        Long me = currentUserId(req);
+        return chatService.getUserChatRooms(me)
+                .stream()
+                .map(room -> new RoomRes(room.getId(), room.getUserAId(), room.getUserBId()))
+                .collect(Collectors.toList());
+    }
     public record RoomRes(Long id, Long userAId, Long userBId){}
     public record MsgRes(Long id, Long roomId, Long senderId, String content, String createdAt){}
 }
