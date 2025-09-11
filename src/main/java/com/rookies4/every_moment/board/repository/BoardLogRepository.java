@@ -1,6 +1,6 @@
-package com.rookies4.every_moment.repository.board;
+package com.rookies4.every_moment.board.repository;
 
-import com.rookies4.every_moment.entity.board.BoardLogEntity;
+import com.rookies4.every_moment.board.entity.BoardLogEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

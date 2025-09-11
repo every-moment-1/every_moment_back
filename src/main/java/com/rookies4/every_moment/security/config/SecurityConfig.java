@@ -1,6 +1,5 @@
 package com.rookies4.every_moment.security.config;
 
-
 import com.rookies4.every_moment.security.CustomAccessDeniedHandler;
 import com.rookies4.every_moment.security.jwt.JwtAuthenticationEntryPoint;
 import com.rookies4.every_moment.security.jwt.JwtAuthenticationFilter;

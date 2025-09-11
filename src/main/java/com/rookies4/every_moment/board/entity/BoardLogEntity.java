@@ -1,4 +1,4 @@
-package com.rookies4.every_moment.entity.board;
+package com.rookies4.every_moment.board.entity;
 
 import com.rookies4.every_moment.entity.UserEntity;
 import jakarta.persistence.*;

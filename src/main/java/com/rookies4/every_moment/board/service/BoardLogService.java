@@ -1,8 +1,8 @@
-package com.rookies4.every_moment.service.board;
+package com.rookies4.every_moment.board.service;
 
 import com.rookies4.every_moment.entity.UserEntity;
-import com.rookies4.every_moment.entity.board.BoardLogEntity;
-import com.rookies4.every_moment.repository.board.BoardLogRepository;
+import com.rookies4.every_moment.board.entity.BoardLogEntity;
+import com.rookies4.every_moment.board.repository.BoardLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

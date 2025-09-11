@@ -1,9 +1,9 @@
-package com.rookies4.every_moment.controller.board;
+package com.rookies4.every_moment.board.controller;
 
 import com.rookies4.every_moment.entity.UserEntity;
-import com.rookies4.every_moment.entity.board.BoardLogEntity;
+import com.rookies4.every_moment.board.entity.BoardLogEntity;
 import com.rookies4.every_moment.service.UserService;
-import com.rookies4.every_moment.service.board.BoardLogService;
+import com.rookies4.every_moment.board.service.BoardLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
