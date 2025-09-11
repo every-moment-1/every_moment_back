@@ -1,11 +1,8 @@
 package com.rookies4.every_moment.match.service;
 
-import com.rookies4.every_moment.match.entity.MatchScores;
+import com.rookies4.every_moment.match.entity.*;
 import com.rookies4.every_moment.match.entity.dto.MatchProposalDTO;
 import com.rookies4.every_moment.entity.UserEntity;
-import com.rookies4.every_moment.match.entity.Match;
-import com.rookies4.every_moment.match.entity.MatchStatus;
-import com.rookies4.every_moment.match.entity.SurveyResult;
 import com.rookies4.every_moment.match.repository.MatchRepository;
 import com.rookies4.every_moment.match.repository.MatchScoresRepository;
 import com.rookies4.every_moment.repository.UserRepository;
@@ -15,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -139,18 +137,22 @@ public class MatchService {
         }
     }
 
-    // 새로운 매칭 신청 (거절된 매칭 이후)
-    @Transactional
-    public void requestNewMatch(Long userId, Long matchId) {
+    // 새로운 매칭을 만드는 대신, 거절된 매칭의 유저 ID를 반환
+    @Transactional(readOnly = true) // 데이터 변경이 없으므로 읽기 전용으로 설정
+    public List<Long> getRejectedMatchUserIds(Long matchId) {
         Optional<Match> matchOptional = matchRepository.findById(matchId);
 
         if (matchOptional.isPresent()) {
             Match match = matchOptional.get();
 
             if (MatchStatus.REJECTED.equals(match.getStatus())) {
-                proposeNewMatch(userId, match.getUser2().getId());
+                // 거절된 매칭의 user1과 user2의 ID를 리스트로 반환
+                List<Long> userIds = new ArrayList<>();
+                userIds.add(match.getUser1().getId());
+                userIds.add(match.getUser2().getId());
+                return userIds;
             } else {
-                throw new IllegalArgumentException("거절된 매칭만 새로운 매칭을 신청할 수 있습니다.");
+                throw new IllegalArgumentException("거절된 매칭이 아닙니다.");
             }
         } else {
             throw new IllegalArgumentException("매칭을 찾을 수 없습니다.");

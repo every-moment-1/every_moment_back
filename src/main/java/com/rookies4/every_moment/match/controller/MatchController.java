@@ -13,6 +13,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/match")
@@ -85,27 +87,16 @@ public class MatchController {
         return ResponseEntity.ok(response);
     }
 
-    // 새로운 매칭 신청
-    @PostMapping("/request-new-match/{matchId}")
-    public ResponseEntity<MatchResponseDTO> requestNewMatch(
-            @PathVariable Long matchId,
-            @AuthenticationPrincipal UserEntity user) {
+    // 거절된 매칭에 대해 user1과 user2 ID를 가져옴
+    @PostMapping("/get-rejected-match-users/{matchId}")
+    public ResponseEntity<List<Long>> getRejectedMatchUsers(
+            @PathVariable Long matchId) {
 
-        matchService.requestNewMatch(user.getId(), matchId);
+        // 1. 서비스 메서드를 호출하여 거절된 매칭의 user1과 user2 ID를 가져옴
+        List<Long> rejectedUserIds = matchService.getRejectedMatchUserIds(matchId);
 
-        // 새로운 매칭 신청 성공 메시지 응답
-        Match match = matchRepository.findById(matchId).orElseThrow(() -> new IllegalArgumentException("매칭을 찾을 수 없습니다."));
-        MatchResponseDTO response = new MatchResponseDTO(
-                matchId,
-                null,
-                null,
-                match.getUser1_Score(),
-                match.getUser2_Score(),
-                match.getSimilarityScore(),
-                "PENDING",
-                "새로운 매칭이 신청되었습니다."
-        );
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        // 2. 응답 DTO를 구성하여 반환하는 대신, 바로 ID 목록을 반환
+        return ResponseEntity.ok(rejectedUserIds);
     }
 
     // 스왑 신청
@@ -129,7 +120,7 @@ public class MatchController {
     }
 
     // 관리자가 새로운 매칭
-    @PreAuthorize("hasRole('ADMIN')")
+//    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/propose-new/{proposerId}/{targetUserId}")
     public ResponseEntity<MatchResponseDTO> proposeNewMatch(@PathVariable Long proposerId, @PathVariable Long targetUserId) {
         // 새로운 매칭을 제안 후, 그 매칭 ID 반환
