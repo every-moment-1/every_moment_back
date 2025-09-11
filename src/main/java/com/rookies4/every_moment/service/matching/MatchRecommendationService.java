@@ -1,17 +1,21 @@
 package com.rookies4.every_moment.service.matching;
 
-import com.rookies4.every_moment.entity.dto.matchingDTO.MatchDTO;
+import com.rookies4.every_moment.entity.dto.matchingDTO.MatchRecommendationDTO;
 import com.rookies4.every_moment.entity.UserEntity;
 import com.rookies4.every_moment.entity.matching.Match;
+import com.rookies4.every_moment.entity.matching.MatchRecommendation;
 import com.rookies4.every_moment.entity.matching.MatchStatus;
 import com.rookies4.every_moment.entity.matching.SurveyResult;
+import com.rookies4.every_moment.repository.matching.MatchRecommendationRepository;
 import com.rookies4.every_moment.repository.matching.MatchRepository;
 import com.rookies4.every_moment.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,14 +24,14 @@ public class MatchRecommendationService {
 
     private final UserRepository userRepository;
     private final ProfileService profileService;
-    private final MatchRepository matchRepository;
     private final SurveyService surveyService;
     private final MatchScorerService matchScorerService;
     private final MatchResultService matchResultService;
+    private final MatchRecommendationRepository matchRecommendationRepository;
 
 
-    // 추천된 사용자 목록을 가져오기 위한 매칭 함수 (추천 결과 DB 저장 포함)
-    public List<MatchDTO> getMatchingRecommendations(UserEntity user) {
+    @Transactional
+    public List<MatchRecommendationDTO> getMatchingRecommendations(UserEntity user) {
         // 사용자 설문 결과를 가져옴
         SurveyResult userSurveyResult = surveyService.getSurveyResult(user.getId());
 
@@ -42,7 +46,7 @@ public class MatchRecommendationService {
         List<Long> userIds = filteredUsers.stream().map(UserEntity::getId).collect(Collectors.toList());
         List<SurveyResult> matchUserSurveyResults = surveyService.getSurveyResultsByUserIds(userIds); // 배치 조회
 
-        List<MatchDTO> recommendations = new ArrayList<>();
+        List<MatchRecommendationDTO> recommendations = new ArrayList<>();
         for (UserEntity matchUser : filteredUsers) {
             if (!matchUser.getId().equals(user.getId())) {
                 // 사용자 설문 결과 찾기
@@ -50,23 +54,43 @@ public class MatchRecommendationService {
                         .filter(survey -> survey.getUser().getId().equals(matchUser.getId()))
                         .findFirst()
                         .orElse(null);
+
+                // 매칭 점수 계산
                 double score = matchScorerService.calculateScore(userSurveyResult, matchUserSurveyResult);
+
+                // 선호도 점수 계산 (추가) 후 0~100 범위로 환산
+                double preferenceScore = matchScorerService.calculatePreferenceScore(userSurveyResult, matchUserSurveyResult);
 
                 // 매칭 이유 리스트 생성
                 List<String> matchReasons = matchResultService.generateMatchReasons(userSurveyResult, matchUserSurveyResult);
 
                 // 추천 DTO에 추가
-                recommendations.add(new MatchDTO(
+                MatchRecommendationDTO recommendationDTO = new MatchRecommendationDTO(
                         matchUser.getId(),
                         "익명 사용자",
                         (int) score,
                         "PENDING",
                         matchReasons,
                         "익명 룸메이트",
-                        score
-                ));
+                        preferenceScore  // 0~100 범위로 변경된 선호도 점수 추가
+                );
+                recommendations.add(recommendationDTO);
+
+                // DB에 추천 결과 저장 (MatchRecommendation 엔티티)
+                MatchRecommendation matchRecommendation = new MatchRecommendation();
+                matchRecommendation.setUser(user);
+                matchRecommendation.setUsername("익명 사용자");
+                matchRecommendation.setScore((int) score);
+                matchRecommendation.setStatus("PENDING");
+                matchRecommendation.setMatchReasons(matchReasons);
+                matchRecommendation.setRoommateName("익명 룸메이트");
+                matchRecommendation.setPreferenceScore(preferenceScore);  // 0~100 범위로 저장된 선호도 점수 저장
+
+                // 추천 결과를 DB에 저장
+                matchRecommendationRepository.save(matchRecommendation);
             }
         }
+
         // 점수 높은 순으로 정렬
         recommendations.sort((m1, m2) -> Double.compare(m2.getScore(), m1.getScore()));
 
@@ -75,24 +99,42 @@ public class MatchRecommendationService {
     }
 
 
-    // 1:1 룸메이트 추천만 반환 (추천 결과 DB 저장 포함)
-    public MatchDTO getMatchingRecommendation(UserEntity user) {
-        // 추천 목록을 DB에 저장
-        List<MatchDTO> recommendations = getMatchingRecommendations(user);
+    // 1:1 룸메이트 추천 저장
+    @Transactional
+    public void saveMatchRecommendation(MatchRecommendationDTO recommendationDTO) {
+        // MatchRecommendation 엔티티 객체 생성
+        MatchRecommendation matchRecommendation = new MatchRecommendation();
 
-        // 첫 번째 추천을 반환하기 전에 DB에 저장된 매칭을 한 번 더 저장
-        MatchDTO firstRecommendation = recommendations.stream().findFirst().orElse(null);
+        // 사용자 엔티티를 가져오고, 추천된 사용자 정보를 설정
+        matchRecommendation.setUser(userRepository.findById(recommendationDTO.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("추천할 사용자가 없습니다.")));
 
-        if (firstRecommendation != null) {
-            // 첫 번째 추천 결과를 DB에 저장
-            Match match = new Match();
-            match.setUser1(user);  // 제안자
-            match.setUser2(userRepository.findById(firstRecommendation.getUserId()).orElse(null));  // 대상자
-            match.setScore(firstRecommendation.getScore());  // 매칭 점수
-            match.setStatus(MatchStatus.PENDING);  // 상태는 기본적으로 PENDING
-            matchRepository.save(match); // DB에 매칭 결과 저장
-        }
+        // DTO에서 받은 정보를 엔티티에 설정
+        matchRecommendation.setUsername(recommendationDTO.getUsername());
+        matchRecommendation.setScore(recommendationDTO.getScore());
+        matchRecommendation.setStatus("PENDING");  // 기본 상태로 PENDING 설정
+        matchRecommendation.setMatchReasons(recommendationDTO.getMatchReasons());
+        matchRecommendation.setRoommateName(recommendationDTO.getRoommateName());
+        matchRecommendation.setPreferenceScore(recommendationDTO.getPreferenceScore());
 
-        return firstRecommendation;
+        // 엔티티를 DB에 저장
+        matchRecommendationRepository.save(matchRecommendation);
     }
+
+    // 1:1 룸메이트 추천 조회
+    public Optional<MatchRecommendationDTO> getMatchingRecommendation(UserEntity user) {
+        MatchRecommendation matchRecommendation = matchRecommendationRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new IllegalArgumentException("추천된 룸메이트가 없습니다."));
+
+        return Optional.of(new MatchRecommendationDTO(
+                matchRecommendation.getUser().getId(),
+                matchRecommendation.getUsername(),
+                matchRecommendation.getScore(),
+                matchRecommendation.getStatus(),
+                matchRecommendation.getMatchReasons(),
+                matchRecommendation.getRoommateName(),
+                matchRecommendation.getPreferenceScore()
+        ));
+    }
+
 }

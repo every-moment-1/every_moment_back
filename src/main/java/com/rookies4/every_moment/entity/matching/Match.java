@@ -32,7 +32,13 @@ public class Match {
     private UserEntity user2;
 
     @Column(nullable = false)
-    private Integer score; // 매칭 점수
+    private Integer user1Score;  // user1의 점수
+
+    @Column(nullable = false)
+    private Integer user2Score;  // user2의 점수
+
+    @Column(nullable = false)
+    private Double similarityScore;  // 유사도 점수 추가
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

@@ -4,8 +4,10 @@ import com.rookies4.every_moment.entity.dto.matchingDTO.MatchProposalDTO;
 import com.rookies4.every_moment.entity.UserEntity;
 import com.rookies4.every_moment.entity.matching.Match;
 import com.rookies4.every_moment.entity.matching.MatchStatus;
+import com.rookies4.every_moment.entity.matching.SurveyResult;
 import com.rookies4.every_moment.repository.matching.MatchRepository;
 import com.rookies4.every_moment.repository.UserRepository;
+import com.rookies4.every_moment.repository.matching.SurveyResultRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,9 +22,9 @@ public class MatchService {
 
     private final UserRepository userRepository;
     private final MatchRepository matchRepository;
+    private final MatchScorerService matchScorerService;
+    private final SurveyResultRepository surveyResultRepository;
 
-
-    // 실제 매칭 제안 시 DB에 저장
     @Transactional
     public Long proposeMatch(Long userId, MatchProposalDTO proposal) {
         Optional<UserEntity> proposer = userRepository.findById(proposal.getProposerId());
@@ -36,16 +38,28 @@ public class MatchService {
                 throw new IllegalArgumentException("이미 " + proposer.get().getUsername() + "와 " + targetUser.get().getUsername() + " 간에 PENDING 상태의 매칭이 존재합니다.");
             }
 
+            // 두 사용자의 설문 결과를 기반으로 점수 계산
+            SurveyResult user1Survey = surveyResultRepository.findByUserId(proposer.get().getId()).orElseThrow(() -> new IllegalArgumentException("사용자 1의 설문 결과가 없습니다."));
+            SurveyResult user2Survey = surveyResultRepository.findByUserId(targetUser.get().getId()).orElseThrow(() -> new IllegalArgumentException("사용자 2의 설문 결과가 없습니다."));
+
+            // 각 사용자의 점수 계산 (여기서는 임시로 합산 방식 사용)
+            int user1Score = (int) matchScorerService.calculateScore(user1Survey, user1Survey); // user1의 점수 계산
+            int user2Score = (int) matchScorerService.calculateScore(user2Survey, user2Survey); // user2의 점수 계산
+            // 유사도 계산
+            double similarityScore = matchScorerService.calculateSimilarity(user1Survey, user2Survey);
+
             // 새로운 매칭 생성
             Match match = new Match();
             match.setUser1(proposer.get());
             match.setUser2(targetUser.get());
-            match.setScore(0); // 점수 초기화
+            match.setUser1Score(user1Score);
+            match.setUser2Score(user2Score);
+            match.setSimilarityScore(similarityScore);  // 유사도 점수 저장
             match.setStatus(MatchStatus.PENDING); // 상태는 기본적으로 PENDING
             matchRepository.save(match);
 
-            // 매칭 ID를 반환
-            return match.getId(); // 매칭 ID를 반환
+            // 매칭 ID 반환
+            return match.getId();
         } else {
             throw new IllegalArgumentException("사용자를 찾을 수 없습니다.");
         }
@@ -133,7 +147,7 @@ public class MatchService {
 
     // 관리자가 새로운 매칭을 제안할 수 있도록 하는 메소드 (스왑 신청 후에만 가능)
     @Transactional
-    public void proposeNewMatch(Long proposerId, Long targetUserId) {
+    public Long proposeNewMatch(Long proposerId, Long targetUserId) {
         Optional<UserEntity> proposer = userRepository.findById(proposerId);
         Optional<UserEntity> targetUser = userRepository.findById(targetUserId);
 
@@ -144,16 +158,32 @@ public class MatchService {
             // 기존 매칭 상태가 SWAP_REQUESTED일 때만 새로운 매칭 제안 가능
             for (Match match : existingMatches) {
                 if (MatchStatus.SWAP_REQUESTED.equals(match.getStatus())) {  // MatchStatus.SWAP_REQUESTED로 변경
-                    // 새로운 매칭을 제안
+                    // 두 사용자의 설문 결과를 기반으로 점수 계산
+                    SurveyResult user1Survey = surveyResultRepository.findByUserId(proposer.get().getId())
+                            .orElseThrow(() -> new IllegalArgumentException("사용자 1의 설문 결과가 없습니다."));
+                    SurveyResult user2Survey = surveyResultRepository.findByUserId(targetUser.get().getId())
+                            .orElseThrow(() -> new IllegalArgumentException("사용자 2의 설문 결과가 없습니다."));
+
+                    // 점수 계산 (여기서는 임시로 합산 방식 사용, 실제로는 MatchScorerService 이용)
+                    int user1Score = (int) matchScorerService.calculateScore(user1Survey, user1Survey); // user1의 점수 계산
+                    int user2Score = (int) matchScorerService.calculateScore(user2Survey, user2Survey); // user2의 점수 계산
+
+                    // 유사도 계산
+                    double similarityScore = matchScorerService.calculateSimilarity(user1Survey, user2Survey);
+
+                    // 새로운 매칭 생성
                     Match newMatch = new Match();
                     newMatch.setUser1(proposer.get());
                     newMatch.setUser2(targetUser.get());
-                    newMatch.setScore(0);  // 매칭 점수 초기화
-                    newMatch.setStatus(MatchStatus.PENDING);  // 상태를 PENDING으로 설정
+                    newMatch.setUser1Score(user1Score);
+                    newMatch.setUser2Score(user2Score);
+                    newMatch.setSimilarityScore(similarityScore);  // 유사도 점수 저장
+                    newMatch.setStatus(MatchStatus.PENDING); // 상태는 기본적으로 PENDING
 
                     // 새 매칭을 데이터베이스에 저장
                     matchRepository.save(newMatch);
-                    return;  // 매칭 생성 후 종료
+
+                    return newMatch.getId(); // 매칭 ID 반환
                 }
             }
 

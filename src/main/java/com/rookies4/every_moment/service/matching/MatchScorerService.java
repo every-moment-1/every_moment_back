@@ -86,4 +86,70 @@ public class MatchScorerService {
         int diff = Math.abs(userRoomTemp - matchUserRoomTemp);
         return (5 - diff) * ROOM_TEMP_WEIGHT; // 차이가 적을수록 점수 증가
     }
+
+
+    // MatchController 유사도 점수 계산
+    // 수면 시간 유사도 계산
+    public double calculateSleepTimeSimilarity(int user1SleepTime, int user2SleepTime) {
+        // 차이를 구하고 이를 정규화 (0 ~ 1 사이)
+        int diff = Math.abs(user1SleepTime - user2SleepTime);
+        return 1 - (double) diff / 3.0;  // 예를 들어, 최대 차이는 3까지로 설정
+    }
+
+    // 청결도 유사도 계산
+    public double calculateCleanlinessSimilarity(int user1Cleanliness, int user2Cleanliness) {
+        int diff = Math.abs(user1Cleanliness - user2Cleanliness);
+        return 1 - (double) diff / 3.0;  // 예시로 최대 차이는 3
+    }
+
+    // 소음 민감도 유사도 계산
+    public double calculateNoiseSensitivitySimilarity(int user1NoiseSensitivity, int user2NoiseSensitivity) {
+        return user1NoiseSensitivity == user2NoiseSensitivity ? 1.0 : 0.0;
+    }
+
+    // 층고 유사도 계산
+    public double calculateHeightSimilarity(int user1Height, int user2Height) {
+        int diff = Math.abs(user1Height - user2Height);
+        return 1 - (double) diff / 2.0;  // 예시로 최대 차이는 2
+    }
+
+    // 방 온도 유사도 계산
+    public double calculateRoomTempSimilarity(int user1RoomTemp, int user2RoomTemp) {
+        int diff = Math.abs(user1RoomTemp - user2RoomTemp);
+        return 1 - (double) diff / 2.0;  // 예시로 최대 차이는 2
+    }
+
+    // 두 사용자의 유사도 계산
+    public double calculateSimilarity(SurveyResult user1Survey, SurveyResult user2Survey) {
+        double sleepTimeSimilarity = calculateSleepTimeSimilarity(user1Survey.getSleepTime(), user2Survey.getSleepTime());
+        double cleanlinessSimilarity = calculateCleanlinessSimilarity(user1Survey.getCleanliness(), user2Survey.getCleanliness());
+        double noiseSensitivitySimilarity = calculateNoiseSensitivitySimilarity(user1Survey.getNoiseSensitivity(), user2Survey.getNoiseSensitivity());
+        double heightSimilarity = calculateHeightSimilarity(user1Survey.getHeight(), user2Survey.getHeight());
+        double roomTempSimilarity = calculateRoomTempSimilarity(user1Survey.getRoomTemp(), user2Survey.getRoomTemp());
+
+        // 각 항목의 유사도를 평균하여 최종 유사도 계산
+        return (sleepTimeSimilarity + cleanlinessSimilarity + noiseSensitivitySimilarity + heightSimilarity + roomTempSimilarity) / 5.0;
+    }
+
+
+
+    // Recommendation에 계산
+
+    public double calculatePreferenceScore(SurveyResult userSurveyResult, SurveyResult matchUserSurveyResult) {
+        // 수면 시간, 청결도, 소음 민감도, 층고, 방 온도 등의 항목을 바탕으로 점수를 계산
+        double score = 0;
+
+        // 예시로 수면 시간과 청결도의 차이를 바탕으로 선호도 점수 계산
+        score += calculateSleepTimeScore(userSurveyResult.getSleepTime(), matchUserSurveyResult.getSleepTime());
+        score += calculateCleanlinessScore(userSurveyResult.getCleanliness(), matchUserSurveyResult.getCleanliness());
+
+        // 정규화 (0 ~ 1 범위로)
+        int totalWeight = SLEEP_TIME_WEIGHT + CLEANLINESS_WEIGHT; // 사용한 항목들의 가중치 합
+        double normalizedPreferenceScore = (score / totalWeight); // 점수 합을 총 가중치로 나누어 0~1 범위로 정규화
+
+//        return Math.min(normalizedPreferenceScore, 1.0); // 1.0을 넘지 않도록 제한
+        // 100점 만점으로 환산
+        return Math.min(normalizedPreferenceScore * 100, 100.0); // 100점 만점으로 제한
+    }
+
 }
