@@ -25,6 +25,7 @@ public class ChatMessage {
     @Column(nullable=false) private Instant createdAt = Instant.now();
     private Instant readAt;
 
+    //JSON 변환시 LAZY로 딜레이 떄문에 오류가 남
     // JSON 변환 시 이 필드를 무시하도록 설정
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
