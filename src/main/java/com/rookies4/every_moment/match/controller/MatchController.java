@@ -119,8 +119,8 @@ public class MatchController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // 관리자가 새로운 매칭
-//    @PreAuthorize("hasRole('ADMIN')")
+    //관리자가 새로운 매칭
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/propose-new/{proposerId}/{targetUserId}")
     public ResponseEntity<MatchResponseDTO> proposeNewMatch(@PathVariable Long proposerId, @PathVariable Long targetUserId) {
         // 새로운 매칭을 제안 후, 그 매칭 ID 반환
