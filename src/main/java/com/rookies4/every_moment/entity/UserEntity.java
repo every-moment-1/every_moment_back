@@ -1,14 +1,16 @@
 package com.rookies4.every_moment.entity;
 
-import com.rookies4.every_moment.entity.matching.Preference;
+import com.rookies4.every_moment.match.entity.Preference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 @Entity
+@EntityListeners(AuditingEntityListener.class)   // ✅ Auditing 리스너 추가
 @Table(name = "users",
         indexes = {
                 @Index(name = "idx_users_email", columnList = "email")

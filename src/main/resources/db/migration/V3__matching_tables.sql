@@ -1,6 +1,6 @@
 -- =====================================================================
 -- V3__matching_tables.sql
--- 매칭/설문 관련 테이블 정의 (MySQL)
+-- 매칭/설문 관련 테이블 정의 (MySQL) + 매칭 테이블 수정 (점수 및 유사도 추가)
 -- =====================================================================
 
 SET NAMES utf8mb4;
@@ -17,6 +17,8 @@ CREATE TABLE IF NOT EXISTS preferences (
   noise_sensitivity INT NOT NULL,
   height INT NOT NULL,
   room_temp INT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,  -- 생성 시 현재 시간 자동 입력
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,  -- 수정 시 현재 시간 자동 업데이트
   CONSTRAINT fk_preference_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
   CONSTRAINT uk_preference_user UNIQUE (user_id)  -- 1:1 관계 보장
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -32,6 +34,9 @@ CREATE TABLE IF NOT EXISTS matches (
   status ENUM('PENDING', 'ACCEPTED', 'REJECTED', 'SWAP_REQUESTED') NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  user1_score INT NOT NULL DEFAULT 0,  -- user1의 점수 추가
+  user2_score INT NOT NULL DEFAULT 0,  -- user2의 점수 추가
+  similarity_score DOUBLE,  -- 유사도 점수 추가
   CONSTRAINT fk_matches_user1 FOREIGN KEY (user1_id) REFERENCES users(id) ON DELETE CASCADE,
   CONSTRAINT fk_matches_user2 FOREIGN KEY (user2_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
