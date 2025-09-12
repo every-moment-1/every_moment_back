@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 public record CommentItem(
         Long id,
         String content,
+        Long authorId,
         String authorName,
         LocalDateTime createdAt
 ) {}

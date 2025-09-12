@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.rookies4.every_moment.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.Instant;
 
@@ -22,6 +23,8 @@ public class ChatMessage {
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;
 
+
+    @CreationTimestamp
     @Column(nullable=false) private Instant createdAt = Instant.now();
     private Instant readAt;
 

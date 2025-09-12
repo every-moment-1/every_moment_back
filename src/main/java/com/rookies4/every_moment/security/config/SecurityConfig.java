@@ -45,7 +45,9 @@ public class SecurityConfig {
                                 "/api/school/auth/**",
                                 "/v3/api-docs/**", "/swagger-ui/**",
                                 "/actuator/health","/ws/**","/ws","/api/chat/**",
-                                "/topic/**","/queue/**","/ws/info/**","/room/**"
+                                "/topic/**","/queue/**","/ws/info/**","/room/**","/api/school/**","/api/survey/submit/**", "/api/preferences/**", "/api/match/**",
+                                "/api/match/recommendation/**",
+                                "/api/match/result/**"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

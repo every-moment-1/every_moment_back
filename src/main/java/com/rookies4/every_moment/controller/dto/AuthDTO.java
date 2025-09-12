@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
+
 /**
  * 모든 인증 관련 DTO를 한 파일로 모은 컨테이너.
  * 외부에서는 AuthDtos.RegisterRequest 같이 사용합니다.
@@ -58,4 +59,6 @@ public final class AuthDTO {
             String accessToken,
             String refreshToken
     ) {}
+
+    public record UpdateUserRequest(String username) {}
 }
