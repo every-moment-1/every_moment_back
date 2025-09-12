@@ -24,14 +24,14 @@ public class MatchResultService {
 
     // 나의 매칭 상태 확인 (자기 자신과의 매칭은 제외하고, 나와 상대방의 매칭만 확인)
     public MatchResultDTO getSelfMatchResult(Long userId) {
-        // 나의 매칭 상태는 내가 제안하거나 받은 매칭에 대해서만 조회한다.
-        List<MatchResult> matchResults = matchResultRepository.findByUserId(userId); // 사용자와 관련된 모든 매칭 가져오기
+        // 사용자와 관련된 모든 매칭을 가져옵니다.
+        List<MatchResult> matchResults = matchResultRepository.findByUserId(userId);
 
         // 매칭 결과가 존재하는 경우
         if (!matchResults.isEmpty()) {
-            MatchResult matchResult = matchResults.get(0);  // 첫 번째 매칭 결과를 반환하거나, 필요에 따라 다른 방식으로 처리
+            MatchResult matchResult = matchResults.get(0);  // 첫 번째 매칭 결과를 가져옵니다.
 
-            // 매칭 상태가 PENDING, REJECTED, SWAP_REQUESTED일 경우, 상태만 반환
+            // 매칭 상태가 PENDING, REJECTED, SWAP_REQUESTED일 경우 상태만 반환
             if (matchResult.getStatus().equals(MatchStatus.PENDING) ||
                     matchResult.getStatus().equals(MatchStatus.REJECTED) ||
                     matchResult.getStatus().equals(MatchStatus.SWAP_REQUESTED)) {
@@ -51,7 +51,7 @@ public class MatchResultService {
                     matchResult.getRoommateName(),
                     matchResult.getScore() != null ? (double) matchResult.getScore() : 0.0,  // 선호도 점수 (0 ~ 100 범위로 변환된 점수)
                     matchResult.getMatchReasons() != null ? matchResult.getMatchReasons() : new ArrayList<>(),  // 매칭 이유 (null이 아닌 빈 리스트로 대체)
-                    String.valueOf(matchResult.getId()) ,  // 매칭 ID
+                    String.valueOf(matchResult.getId()),  // 매칭 ID
                     matchResult.getStatus().name()  // 상태 추가
             );
         } else {
@@ -59,25 +59,25 @@ public class MatchResultService {
         }
     }
 
-    // 나와 상대방의 매칭 상태 확인
+    // 자신과 상대방 매칭 상태 확인
     public MatchResultDTO getMatchStatusResult(Long userId, Long matchUserId) {
-        Optional<MatchResult> matchResultOptional = matchResultRepository.findByUserIdAndMatchUserId(userId, matchUserId);
+        Optional<MatchResult> matchResultOptional = matchResultRepository.findByUserIdAndMatchUserId(userId, matchUserId); // Optional로 받아옴
 
         if (matchResultOptional.isPresent()) {
             MatchResult matchResult = matchResultOptional.get();
 
             // 매칭 상태가 PENDING, REJECTED, SWAP_REQUESTED 상태일 때는 상태만 반환
-            if (matchResult.getStatus().equals(MatchStatus.PENDING) ||
-                    matchResult.getStatus().equals(MatchStatus.REJECTED) ||
-                    matchResult.getStatus().equals(MatchStatus.SWAP_REQUESTED)) {
+            if (matchResult.getStatus() == MatchStatus.PENDING ||
+                    matchResult.getStatus() == MatchStatus.REJECTED ||
+                    matchResult.getStatus() == MatchStatus.SWAP_REQUESTED) {
 
                 return new MatchResultDTO(
-                        matchResult.getStatus().name(),  // 상태만 반환 (PENDING, REJECTED, SWAP_REQUESTED)
-                        null,  // 룸 배정
-                        null,  // 룸메이트 이름
-                        null,  // 선호도 점수 (null로 반환)
-                        null,  // 매칭 이유 (null로 반환)
-                        String.valueOf(matchResult.getId())  // 매칭 ID를 String으로 변환하여 반환
+                        matchResult.getStatus().name(),
+                        null,
+                        null,
+                        null,
+                        null,
+                        String.valueOf(matchResult.getId())
                 );
             }
 
@@ -85,10 +85,10 @@ public class MatchResultService {
             return new MatchResultDTO(
                     matchResult.getRoomAssignment(),
                     matchResult.getRoommateName(),
-                    matchResult.getScore() != null ? (double) matchResult.getScore() : 0.0,  // 선호도 점수 (0 ~ 100 범위로 변환된 점수)
-                    matchResult.getMatchReasons() != null ? matchResult.getMatchReasons() : new ArrayList<>(),  // 매칭 이유 (null이 아닌 빈 리스트로 대체)
-                    String.valueOf(matchResult.getId()) ,  // 매칭 ID
-                    matchResult.getStatus().name()  // 상태 추가
+                    matchResult.getScore() != null ? (double) matchResult.getScore() : 0.0,
+                    matchResult.getMatchReasons() != null ? matchResult.getMatchReasons() : new ArrayList<>(),
+                    String.valueOf(matchResult.getId()),
+                    matchResult.getStatus().name()
             );
         } else {
             throw new IllegalArgumentException("매칭을 찾을 수 없습니다.");
@@ -114,16 +114,7 @@ public class MatchResultService {
         String roommateName = "익명";
 
         // 매칭 결과 DB에 저장
-        MatchResult matchResult = new MatchResult();
-        matchResult.setUser(userRepository.findById(userId).orElse(null));
-        matchResult.setMatchUser(userRepository.findById(matchUserId).orElse(null));
-        matchResult.setScore((int) score);
-        matchResult.setRoomAssignment(roomAssignment);
-        matchResult.setRoommateName(roommateName);
-        matchResult.setMatchReasons(matchReasons);
-        matchResult.setStatus(MatchStatus.PENDING); // 여기서 직접 MatchStatus 사용
-
-        matchResultRepository.save(matchResult);  // DB에 저장
+        MatchResult matchResult = saveMatchResult(userId, matchUserId, score, roomAssignment, roommateName, matchReasons);
 
         // 매칭 결과 DTO 생성 후 반환
         return new MatchResultDTO(
@@ -134,6 +125,19 @@ public class MatchResultService {
                 String.valueOf(matchResult.getId()),  // 저장된 매칭 ID
                 matchResult.getStatus().name()
         );
+    }
+
+    private MatchResult saveMatchResult(Long userId, Long matchUserId, double score, String roomAssignment, String roommateName, List<String> matchReasons) {
+        MatchResult matchResult = new MatchResult();
+        matchResult.setUser(userRepository.findById(userId).orElse(null));
+        matchResult.setMatchUser(userRepository.findById(matchUserId).orElse(null));
+        matchResult.setScore((int) score);
+        matchResult.setRoomAssignment(roomAssignment);
+        matchResult.setRoommateName(roommateName);
+        matchResult.setMatchReasons(matchReasons);
+        matchResult.setStatus(MatchStatus.PENDING); // 여기서 직접 MatchStatus 사용
+
+        return matchResultRepository.save(matchResult);  // DB에 저장
     }
 
     // 매칭 이유 생성
