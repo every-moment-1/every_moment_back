@@ -21,9 +21,10 @@ public class PreferenceController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);  // 계산된 선호도를 응답으로 반환
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<PreferenceResponseDTO> getPreferences(@PathVariable Long userId) {
-        PreferenceResponseDTO preferenceDTO = preferencesService.getPreferences(userId);
-        return ResponseEntity.ok(preferenceDTO);
-    }
+    // 선호도 조회
+//    @GetMapping("/{userId}")
+//    public ResponseEntity<PreferenceResponseDTO> getPreferences(@PathVariable Long userId) {
+//        PreferenceResponseDTO preferenceDTO = preferencesService.getPreferences(userId);
+//        return ResponseEntity.ok(preferenceDTO);
+//    }
 }

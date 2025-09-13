@@ -53,23 +53,23 @@ public class PreferenceService {
         );
     }
 
-    // 선호도 조회
-    public PreferenceResponseDTO getPreferences(Long userId) {
-        Preference preference = preferencesRepository.findByUserId(userId);
-
-        if (preference != null) {
-            // PreferenceResponseDTO로 변환하여 반환
-            return new PreferenceResponseDTO(
-                    preference.getId(),
-                    preference.getUser().getId(),  // userId
-                    preference.getCleanliness(),
-                    preference.getHeight(),
-                    preference.getNoiseSensitivity(),
-                    preference.getRoomTemp(),
-                    preference.getSleepTime()
-            );
-        } else {
-            throw new IllegalArgumentException("선호도를 찾을 수 없습니다.");
-        }
-    }
+//    // 선호도 조회
+//    public PreferenceResponseDTO getPreferences(Long userId) {
+//        Preference preference = preferencesRepository.findByUserId(userId);
+//
+//        if (preference != null) {
+//            // PreferenceResponseDTO로 변환하여 반환
+//            return new PreferenceResponseDTO(
+//                    preference.getId(),
+//                    preference.getUser().getId(),  // userId
+//                    preference.getCleanliness(),
+//                    preference.getHeight(),
+//                    preference.getNoiseSensitivity(),
+//                    preference.getRoomTemp(),
+//                    preference.getSleepTime()
+//            );
+//        } else {
+//            throw new IllegalArgumentException("선호도를 찾을 수 없습니다.");
+//        }
+//    }
 }
