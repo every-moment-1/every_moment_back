@@ -35,22 +35,15 @@ public class MatchRecommendation {
     @Column(nullable = false)
     private String status;  // 매칭 상태 (PENDING, ACCEPTED, REJECTED, SWAP_REQUESTED)
 
-    @ElementCollection
-    @CollectionTable(name = "match_reasons", joinColumns = @JoinColumn(name = "match_recommendation_id"))
-    @Column(name = "reason")
-    private List<String> matchReasons; // 매칭 이유 리스트
-
     @Column(nullable = false)
     private String roommateName;  // 룸메이트 이름 (익명으로 표시)
 
     @Column(nullable = false)
     private Double preferenceScore;  // 룸메이트 선호도 (0~100 범위)
 
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP", insertable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @LastModifiedDate
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP", insertable = false)
     private LocalDateTime updatedAt;
 }

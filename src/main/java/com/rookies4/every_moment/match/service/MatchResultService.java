@@ -4,6 +4,7 @@ import com.rookies4.every_moment.match.entity.dto.MatchResultDTO;
 import com.rookies4.every_moment.match.entity.MatchResult;
 import com.rookies4.every_moment.match.entity.MatchStatus;
 import com.rookies4.every_moment.match.entity.SurveyResult;
+import com.rookies4.every_moment.match.repository.MatchRepository;
 import com.rookies4.every_moment.match.repository.MatchResultRepository;
 import com.rookies4.every_moment.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ public class MatchResultService {
     private final UserRepository userRepository;
     private final SurveyService surveyService;
     private final MatchScorerService matchScorerService;
+    private final MatchRepository matchRepository;
 
     // 나의 매칭 상태 확인 (자기 자신과의 매칭은 제외하고, 나와 상대방의 매칭만 확인)
     public MatchResultDTO getSelfMatchResult(Long userId) {
@@ -59,37 +61,81 @@ public class MatchResultService {
         }
     }
 
-    // 자신과 상대방 매칭 상태 확인
-    public MatchResultDTO getMatchStatusResult(Long userId, Long matchUserId) {
-        Optional<MatchResult> matchResultOptional = matchResultRepository.findByUserIdAndMatchUserId(userId, matchUserId); // Optional로 받아옴
 
-        if (matchResultOptional.isPresent()) {
-            MatchResult matchResult = matchResultOptional.get();
+    // 자신과 상대방 매칭 상태 확인 (결과 하나 반환)
+//    public MatchResultDTO getMatchStatusResult(Long userId, Long matchUserId) {
+//        // 두 사용자가 서로 매칭된 데이터를 가져옵니다.
+//        Optional<MatchResult> matchResultOptional = matchResultRepository.findByUserIdAndMatchUserId(userId, matchUserId);
+//
+//        if (matchResultOptional.isPresent()) {
+//            MatchResult matchResult = matchResultOptional.get();
+//
+//            // 매칭 상태가 PENDING, REJECTED, SWAP_REQUESTED 상태일 때는 상태만 반환
+//            if (matchResult.getStatus() == MatchStatus.PENDING ||
+//                    matchResult.getStatus() == MatchStatus.REJECTED ||
+//                    matchResult.getStatus() == MatchStatus.SWAP_REQUESTED) {
+//
+//                return new MatchResultDTO(
+//                        matchResult.getStatus().name(),
+//                        null,
+//                        null,
+//                        null,
+//                        null,
+//                        String.valueOf(matchResult.getId())
+//                );
+//            }
+//
+//            // 매칭이 ACCEPTED일 경우 매칭 결과 반환
+//            return new MatchResultDTO(
+//                    matchResult.getRoomAssignment(),
+//                    matchResult.getRoommateName(),
+//                    matchResult.getScore() != null ? (double) matchResult.getScore() : 0.0,
+//                    matchResult.getMatchReasons() != null ? matchResult.getMatchReasons() : new ArrayList<>(),
+//                    String.valueOf(matchResult.getId()),
+//                    matchResult.getStatus().name()
+//            );
+//        } else {
+//            throw new IllegalArgumentException("매칭을 찾을 수 없습니다.");
+//        }
+//    }
 
-            // 매칭 상태가 PENDING, REJECTED, SWAP_REQUESTED 상태일 때는 상태만 반환
-            if (matchResult.getStatus() == MatchStatus.PENDING ||
-                    matchResult.getStatus() == MatchStatus.REJECTED ||
-                    matchResult.getStatus() == MatchStatus.SWAP_REQUESTED) {
+    // 자신과 상대방 매칭 상태 확인 (여러 결과 반환)
+    public List<MatchResultDTO> getMatchStatusResult(Long userId, Long matchUserId) {
+        // 두 사용자가 매칭된 데이터를 가져옵니다.
+        List<MatchResult> matchResults = matchResultRepository.findByUserIdAndMatchUserId(userId, matchUserId);
 
-                return new MatchResultDTO(
-                        matchResult.getStatus().name(),
-                        null,
-                        null,
-                        null,
-                        null,
-                        String.valueOf(matchResult.getId())
-                );
+        // 결과가 존재하는 경우
+        if (!matchResults.isEmpty()) {
+            List<MatchResultDTO> matchResultDTOList = new ArrayList<>();
+
+            // 매칭 상태가 PENDING, REJECTED, SWAP_REQUESTED일 때는 상태만 반환
+            for (MatchResult matchResult : matchResults) {
+                if (matchResult.getStatus() == MatchStatus.PENDING ||
+                        matchResult.getStatus() == MatchStatus.REJECTED ||
+                        matchResult.getStatus() == MatchStatus.SWAP_REQUESTED) {
+
+                    matchResultDTOList.add(new MatchResultDTO(
+                            matchResult.getStatus().name(),
+                            null,
+                            null,
+                            null,
+                            null,
+                            String.valueOf(matchResult.getId())
+                    ));
+                } else {
+                    // 매칭이 ACCEPTED일 경우 매칭 결과 반환
+                    matchResultDTOList.add(new MatchResultDTO(
+                            matchResult.getRoomAssignment(),
+                            matchResult.getRoommateName(),
+                            matchResult.getScore() != null ? (double) matchResult.getScore() : 0.0,
+                            matchResult.getMatchReasons() != null ? matchResult.getMatchReasons() : new ArrayList<>(),
+                            String.valueOf(matchResult.getId()),
+                            matchResult.getStatus().name()
+                    ));
+                }
             }
 
-            // 매칭이 ACCEPTED일 경우 매칭 결과 반환
-            return new MatchResultDTO(
-                    matchResult.getRoomAssignment(),
-                    matchResult.getRoommateName(),
-                    matchResult.getScore() != null ? (double) matchResult.getScore() : 0.0,
-                    matchResult.getMatchReasons() != null ? matchResult.getMatchReasons() : new ArrayList<>(),
-                    String.valueOf(matchResult.getId()),
-                    matchResult.getStatus().name()
-            );
+            return matchResultDTOList;
         } else {
             throw new IllegalArgumentException("매칭을 찾을 수 없습니다.");
         }
@@ -122,8 +168,8 @@ public class MatchResultService {
                 roommateName,
                 score,
                 matchReasons,
-                String.valueOf(matchResult.getId()),  // 저장된 매칭 ID
-                matchResult.getStatus().name()
+                String.valueOf(userId),  // 매칭 ID를 String으로 변환하여 반환
+                "PENDING"
         );
     }
 
@@ -139,6 +185,7 @@ public class MatchResultService {
 
         return matchResultRepository.save(matchResult);  // DB에 저장
     }
+
 
     // 매칭 이유 생성
     public List<String> generateMatchReasons(SurveyResult userSurveyResult, SurveyResult matchUserSurveyResult) {
@@ -165,6 +212,7 @@ public class MatchResultService {
 
         return reasons.subList(0, 3); // 상위 3개 항목
     }
+
 
 
 }

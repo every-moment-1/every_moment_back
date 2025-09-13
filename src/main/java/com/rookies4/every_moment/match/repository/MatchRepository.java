@@ -4,6 +4,8 @@ import com.rookies4.every_moment.entity.UserEntity;
 import com.rookies4.every_moment.match.entity.Match;
 import com.rookies4.every_moment.match.entity.MatchStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -24,4 +26,7 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
 
     // 사용자 1, 사용자 2, 매칭 상태로 매칭을 찾는 메서드
     Optional<Match> findByUser1AndUser2AndStatus(UserEntity user1, UserEntity user2, MatchStatus status);
+
+
+
 }

@@ -2,6 +2,7 @@ package com.rookies4.every_moment.match.controller;
 
 import com.rookies4.every_moment.match.entity.dto.MatchRecommendationDTO;
 import com.rookies4.every_moment.entity.UserEntity;
+import com.rookies4.every_moment.match.entity.dto.MatchResultDTO;
 import com.rookies4.every_moment.match.service.MatchRecommendationService;
 import com.rookies4.every_moment.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -23,17 +24,11 @@ public class MatchRecommendationController {
 
     // 추천된 사용자 목록을 가져오기 위한 매칭 함수 (userId를 PathVariable로 받음)
 
-    @GetMapping("/list") // URL에서 {userId}를 제거합니다.
-    public ResponseEntity<List<MatchRecommendationDTO>> getMatchingRecommendationsList(@AuthenticationPrincipal UserEntity user) {
+    @GetMapping("/list/{userId}") // userId를 URL에서 받습니다.
+    public ResponseEntity<List<MatchRecommendationDTO>> getMatchingRecommendationsList(@PathVariable Long userId) {
 
-        // 스프링 시큐리티가 사용자를 인증했는지 확인합니다.
-        if (user == null) {
-            // 인증되지 않은 사용자는 접근을 거부합니다.
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-
-        // 이제 userId는 URL에서 오는 것이 아니라, 안전하게 인증된 user 객체에서 가져옵니다.
-        List<MatchRecommendationDTO> recommendations = matchRecommendationService.getMatchingRecommendations(user);
+        // 주어진 userId를 사용하여 매칭 추천 목록을 가져옵니다.
+        List<MatchRecommendationDTO> recommendations = matchRecommendationService.getMatchingRecommendations(userId);
 
         if (recommendations.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
