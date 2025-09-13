@@ -19,21 +19,12 @@ public class MatchResultController {
     private final MatchRepository matchRepository;
     private final MatchService matchService;
 
-
     // 나의 매칭 상태 확인 (자기 자신만의 매칭)
     @GetMapping("/{userId}")
-    public ResponseEntity<MatchResultDTO> getSelfMatchResult(@PathVariable Long userId) {
-        MatchResultDTO result = matchResultService.getSelfMatchResult(userId); // 자기 자신의 매칭 상태를 확인
+    public ResponseEntity<List<MatchResultDTO>> getSelfMatchResult(@PathVariable Long userId) {
+        List<MatchResultDTO> result = matchResultService.getSelfMatchResult(userId); // 여러 매칭 상태를 반환
         return ResponseEntity.ok(result);
     }
-
-//    // 자신과 상대방 매칭 상태 확인
-//    @GetMapping("/status/{userId}/{matchUserId}")
-//    public ResponseEntity<MatchResultDTO> getMatchStatusResult(@PathVariable Long userId, @PathVariable Long matchUserId) {
-//        MatchResultDTO result = matchResultService.getMatchStatusResult(userId, matchUserId);
-//        return ResponseEntity.ok(result);
-//    }
-
 
     // 자신과 상대방 매칭 상태 확인 (여러 매칭 결과 반환)
     @GetMapping("/status/{userId}/{matchUserId}")
@@ -42,13 +33,10 @@ public class MatchResultController {
         return ResponseEntity.ok(result);
     }
 
-
-
     // 매칭 결과 조회
     @GetMapping("/result/{userId}/{matchUserId}")
     public ResponseEntity<MatchResultDTO> getMatchResult(@PathVariable Long userId, @PathVariable Long matchUserId) {
         MatchResultDTO result = matchResultService.getMatchResult(userId, matchUserId);
         return ResponseEntity.ok(result);
     }
-
 }

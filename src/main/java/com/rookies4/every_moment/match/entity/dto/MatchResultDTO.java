@@ -10,7 +10,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 public class MatchResultDTO {
-    
+    private Long id;
     private String roomAssignment;  // 배정된 룸 (예: A동 304호, DOUBLE)
     private String roommateName;    // 룸메이트 이름 (익명 처리)
     private Double preferenceScore; // 선호도 점수 (0 ~ 100 범위)
