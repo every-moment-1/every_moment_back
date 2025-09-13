@@ -11,7 +11,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -85,7 +84,7 @@ public class MatchService {
         calculateAndSetMatchScores(match, user1Survey, user2Survey);
 
         // 1. 매칭 객체를 먼저 저장하여 ID를 할당받음
-        // 이 시점에서 match 객체는 영속 상태가 됩니다.
+        // 이 시점에서 match 객체는 영속 상태가 됨
         Match savedMatch = matchRepository.save(match);
 
         // 2. MatchScores 객체를 생성하고, 방금 저장된 Match 객체(savedMatch)를 연결

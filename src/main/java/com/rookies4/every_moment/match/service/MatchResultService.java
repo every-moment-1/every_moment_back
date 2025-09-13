@@ -26,7 +26,7 @@ public class MatchResultService {
 
     // 나의 매칭 상태 확인 (matchId, status만 반환)
     public List<MatchResultDTO> getSelfMatchResult(Long userId) {
-        // 사용자와 관련된 모든 매칭을 가져옵니다.
+        // 사용자와 관련된 모든 매칭을 가져옴
         List<MatchResult> matchResults = matchResultRepository.findByUserId(userId);
 
         // 매칭 결과가 존재하는 경우
@@ -57,7 +57,7 @@ public class MatchResultService {
     // 자신과 상대방 매칭 상태 확인 (여러 결과 반환)
     @Transactional
     public List<MatchResultDTO> getMatchStatusResult(Long userId, Long matchUserId) {
-        // 두 사용자가 매칭된 Match 데이터를 가져옵니다.
+        // 두 사용자가 매칭된 Match 데이터를 가져옴
         List<Match> matches = matchRepository.findByUser1IdAndUser2Id(userId, matchUserId);
 
         // 결과가 존재하는 경우

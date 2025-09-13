@@ -1,9 +1,7 @@
 package com.rookies4.every_moment.match.controller;
 
 import com.rookies4.every_moment.match.entity.dto.MatchResultDTO;
-import com.rookies4.every_moment.match.repository.MatchRepository;
 import com.rookies4.every_moment.match.service.MatchResultService;
-import com.rookies4.every_moment.match.service.MatchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,8 +14,6 @@ import java.util.List;
 public class MatchResultController {
 
     private final MatchResultService matchResultService;
-    private final MatchRepository matchRepository;
-    private final MatchService matchService;
 
     // 나의 매칭 상태 확인 (자기 자신만의 매칭)
     @GetMapping("/{userId}")

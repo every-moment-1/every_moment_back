@@ -7,7 +7,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface MatchResultRepository extends JpaRepository<MatchResult, Long> {
@@ -19,9 +18,6 @@ public interface MatchResultRepository extends JpaRepository<MatchResult, Long> 
 
     // 사용자와 관련된 모든 매칭 결과를 가져오는 메서드
     List<MatchResult> findByUserId(Long userId);
-
-//    // 사용자와 상대방 매칭 결과를 가져오는 메서드 (결과 하나 반환)
-//    Optional<MatchResult> findByUserIdAndMatchUserId(Long userId, Long matchUserId);
 
     // 사용자와 상대방 매칭 결과를 가져오는 메서드 (여러 결과 반환)
     @Query("SELECT m FROM MatchResult m WHERE m.user.id = :userId AND m.matchUser.id = :matchUserId")

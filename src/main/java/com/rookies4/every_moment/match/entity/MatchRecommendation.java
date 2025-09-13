@@ -3,11 +3,8 @@ package com.rookies4.every_moment.match.entity;
 import com.rookies4.every_moment.entity.UserEntity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "match_recs")

@@ -10,7 +10,6 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 import java.util.List;
 
-//match결과 저장
 @Entity
 @Table(name = "match_results")
 @Getter

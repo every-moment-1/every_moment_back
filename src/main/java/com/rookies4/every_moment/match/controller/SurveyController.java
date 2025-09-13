@@ -28,7 +28,6 @@ public class SurveyController {
         return ResponseEntity.status(HttpStatus.CREATED).body(savedSurveyResult);   // 설문 제출 완료 응답
     }
 
-
     // 설문 결과 조회
     @GetMapping("/{userId}")
     public ResponseEntity<SurveyResultResponseDTO> getSurveyResult(@PathVariable Long userId) {
