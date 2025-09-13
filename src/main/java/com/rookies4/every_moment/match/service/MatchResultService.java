@@ -1,5 +1,6 @@
 package com.rookies4.every_moment.match.service;
 
+import com.rookies4.every_moment.match.entity.Match;
 import com.rookies4.every_moment.match.entity.dto.MatchResultDTO;
 import com.rookies4.every_moment.match.entity.MatchResult;
 import com.rookies4.every_moment.match.entity.MatchStatus;
@@ -61,8 +62,7 @@ public class MatchResultService {
         }
     }
 
-
-    // 자신과 상대방 매칭 상태 확인 (결과 하나 반환)
+    // 자신과 상대방 매칭 상태 확인 ( 결과 하나 반환)
 //    public MatchResultDTO getMatchStatusResult(Long userId, Long matchUserId) {
 //        // 두 사용자가 서로 매칭된 데이터를 가져옵니다.
 //        Optional<MatchResult> matchResultOptional = matchResultRepository.findByUserIdAndMatchUserId(userId, matchUserId);
@@ -141,7 +141,10 @@ public class MatchResultService {
         }
     }
 
-    // 매칭 결과 페이지를 위한 데이터 생성
+
+
+
+    // 매칭 결과 DTO 생성 후 반환
     public MatchResultDTO getMatchResult(Long userId, Long matchUserId) {
         // 사용자의 설문 결과 조회
         SurveyResult userSurveyResult = surveyService.getSurveyResult(userId);
@@ -162,6 +165,9 @@ public class MatchResultService {
         // 매칭 결과 DB에 저장
         MatchResult matchResult = saveMatchResult(userId, matchUserId, score, roomAssignment, roommateName, matchReasons);
 
+        // 상태 가져오기
+        String status = matchResult.getMatch().getStatus().name(); // Match 상태 가져오기
+
         // 매칭 결과 DTO 생성 후 반환
         return new MatchResultDTO(
                 roomAssignment,
@@ -169,21 +175,36 @@ public class MatchResultService {
                 score,
                 matchReasons,
                 String.valueOf(userId),  // 매칭 ID를 String으로 변환하여 반환
-                "PENDING"
+                status
         );
     }
 
     private MatchResult saveMatchResult(Long userId, Long matchUserId, double score, String roomAssignment, String roommateName, List<String> matchReasons) {
+        // 사용자와 매칭된 Match 객체를 찾습니다.
+        Match match = matchRepository.findByUser1IdAndUser2Id(userId, matchUserId)
+                .orElseThrow(() -> new IllegalArgumentException("매칭을 찾을 수 없습니다."));
+
+        // 새로운 MatchResult 객체 생성
         MatchResult matchResult = new MatchResult();
+        matchResult.setMatch(match);  // Match 객체 설정
         matchResult.setUser(userRepository.findById(userId).orElse(null));
-        matchResult.setMatchUser(userRepository.findById(matchUserId).orElse(null));
+        matchResult.setMatchUser(userRepository.findById(matchUserId).orElse(null));  // matchUser 설정 추가
         matchResult.setScore((int) score);
         matchResult.setRoomAssignment(roomAssignment);
         matchResult.setRoommateName(roommateName);
         matchResult.setMatchReasons(matchReasons);
-        matchResult.setStatus(MatchStatus.PENDING); // 여기서 직접 MatchStatus 사용
 
-        return matchResultRepository.save(matchResult);  // DB에 저장
+        // Match 상태를 기반으로 MatchResult 상태 설정
+        if (match.getStatus() == MatchStatus.ACCEPTED) {
+            matchResult.setStatus(MatchStatus.ACCEPTED);
+        } else if (match.getStatus() == MatchStatus.REJECTED) {
+            matchResult.setStatus(MatchStatus.REJECTED);
+        } else {
+            matchResult.setStatus(MatchStatus.PENDING);  // 기본 상태는 PENDING
+        }
+
+        // MatchResult 객체를 DB에 저장
+        return matchResultRepository.save(matchResult);
     }
 
 
