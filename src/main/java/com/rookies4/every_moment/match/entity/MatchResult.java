@@ -25,7 +25,7 @@ public class MatchResult {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "match_id", nullable = false)
     private Match match;
 
@@ -46,7 +46,7 @@ public class MatchResult {
     @Column(nullable = false)
     private String roommateName;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "match_result_reasons", joinColumns = @JoinColumn(name = "match_result_id"))
     @Column(name = "reason")
     private List<String> matchReasons;

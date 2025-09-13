@@ -10,6 +10,7 @@ import com.rookies4.every_moment.match.repository.MatchResultRepository;
 import com.rookies4.every_moment.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -100,39 +101,27 @@ public class MatchResultService {
 //    }
 
     // 자신과 상대방 매칭 상태 확인 (여러 결과 반환)
+    @Transactional
     public List<MatchResultDTO> getMatchStatusResult(Long userId, Long matchUserId) {
-        // 두 사용자가 매칭된 데이터를 가져옵니다.
-        List<MatchResult> matchResults = matchResultRepository.findByUserIdAndMatchUserId(userId, matchUserId);
+        // 두 사용자가 매칭된 Match 데이터를 가져옵니다.
+        List<Match> matches = matchRepository.findByUser1IdAndUser2Id(userId, matchUserId);
 
         // 결과가 존재하는 경우
-        if (!matchResults.isEmpty()) {
+        if (!matches.isEmpty()) {
             List<MatchResultDTO> matchResultDTOList = new ArrayList<>();
 
-            // 매칭 상태가 PENDING, REJECTED, SWAP_REQUESTED일 때는 상태만 반환
-            for (MatchResult matchResult : matchResults) {
-                if (matchResult.getStatus() == MatchStatus.PENDING ||
-                        matchResult.getStatus() == MatchStatus.REJECTED ||
-                        matchResult.getStatus() == MatchStatus.SWAP_REQUESTED) {
+            // 매칭 상태에 따라 처리
+            for (Match match : matches) {
+                // 상태와 매칭 ID만 반환 (PENDING, REJECTED, SWAP_REQUESTED, ACCEPTED 등)
+                matchResultDTOList.add(new MatchResultDTO(
+                        null,  // 룸 배정은 null로 처리
+                        null,  // 룸메이트 이름도 null로 처리
+                        null,  // 선호도 점수는 null로 처리
+                        null,
+                        match.getId() != null ? String.valueOf(match.getId()) : "UNKNOWN",  // 매칭 ID 가져오기
+                        match.getStatus() != null ? match.getStatus().name() : "UNKNOWN"  // Match 엔티티의 상태 가져오기
 
-                    matchResultDTOList.add(new MatchResultDTO(
-                            matchResult.getStatus().name(),
-                            null,
-                            null,
-                            null,
-                            null,
-                            String.valueOf(matchResult.getId())
-                    ));
-                } else {
-                    // 매칭이 ACCEPTED일 경우 매칭 결과 반환
-                    matchResultDTOList.add(new MatchResultDTO(
-                            matchResult.getRoomAssignment(),
-                            matchResult.getRoommateName(),
-                            matchResult.getScore() != null ? (double) matchResult.getScore() : 0.0,
-                            matchResult.getMatchReasons() != null ? matchResult.getMatchReasons() : new ArrayList<>(),
-                            String.valueOf(matchResult.getId()),
-                            matchResult.getStatus().name()
-                    ));
-                }
+                ));
             }
 
             return matchResultDTOList;
@@ -140,8 +129,6 @@ public class MatchResultService {
             throw new IllegalArgumentException("매칭을 찾을 수 없습니다.");
         }
     }
-
-
 
 
     // 매칭 결과 DTO 생성 후 반환
@@ -181,8 +168,13 @@ public class MatchResultService {
 
     private MatchResult saveMatchResult(Long userId, Long matchUserId, double score, String roomAssignment, String roommateName, List<String> matchReasons) {
         // 사용자와 매칭된 Match 객체를 찾습니다.
-        Match match = matchRepository.findByUser1IdAndUser2Id(userId, matchUserId)
-                .orElseThrow(() -> new IllegalArgumentException("매칭을 찾을 수 없습니다."));
+        List<Match> matches = matchRepository.findByUser1IdAndUser2Id(userId, matchUserId);
+        if (matches.isEmpty()) {
+            throw new IllegalArgumentException("매칭을 찾을 수 없습니다.");
+        }
+
+        // matches에서 첫 번째 결과를 사용
+        Match match = matches.get(0);  // 첫 번째 매칭 결과 가져오기
 
         // 새로운 MatchResult 객체 생성
         MatchResult matchResult = new MatchResult();
@@ -233,7 +225,5 @@ public class MatchResultService {
 
         return reasons.subList(0, 3); // 상위 3개 항목
     }
-
-
 
 }
