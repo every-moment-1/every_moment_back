@@ -74,7 +74,7 @@ public class PostService {
 
         return new PostDetail(
                 p.getId(), p.getCategory(), p.getTitle(), p.getContent(),
-                p.getCreatedAt(), p.getAuthor().getId(), p.getAuthor().getUsername(), comments
+                p.getCreatedAt(), p.getUpdatedAt(),p.getAuthor().getId(), p.getAuthor().getUsername(), comments
         );
     }
 

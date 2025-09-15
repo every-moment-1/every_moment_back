@@ -87,7 +87,6 @@ public class MatchScorerService {
         return (5 - diff) * ROOM_TEMP_WEIGHT; // 차이가 적을수록 점수 증가
     }
 
-
     // MatchController 유사도 점수 계산
     // 수면 시간 유사도 계산
     public double calculateSleepTimeSimilarity(int user1SleepTime, int user2SleepTime) {
@@ -133,7 +132,6 @@ public class MatchScorerService {
 
 
     // Recommendation에 계산
-
     public double calculatePreferenceScore(SurveyResult userSurveyResult, SurveyResult matchUserSurveyResult) {
         // 수면 시간, 청결도, 소음 민감도, 층고, 방 온도 등의 항목을 바탕으로 점수를 계산
         double score = 0;
@@ -147,8 +145,8 @@ public class MatchScorerService {
         double normalizedPreferenceScore = (score / totalWeight); // 점수 합을 총 가중치로 나누어 0~1 범위로 정규화
 
 //        return Math.min(normalizedPreferenceScore, 1.0); // 1.0을 넘지 않도록 제한
+
         // 100점 만점으로 환산
         return Math.min(normalizedPreferenceScore * 100, 100.0); // 100점 만점으로 제한
     }
-
 }

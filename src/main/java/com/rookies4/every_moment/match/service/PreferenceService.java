@@ -12,9 +12,9 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class PreferenceService {
 
-    private final PreferenceRepository preferencesRepository; // PreferencesRepository
-    private final SurveyResultRepository surveyResultRepository; // SurveyResultRepository
-    private final MatchScorerService matchScorerService; // 점수 계산 서비스
+    private final PreferenceRepository preferencesRepository;
+    private final SurveyResultRepository surveyResultRepository;
+    private final MatchScorerService matchScorerService;
 
     // 설문 결과를 바탕으로 선호도 계산하여 Preferences 테이블에 저장
     public PreferenceResponseDTO calculateAndSavePreferences(Long userId) {
@@ -51,25 +51,5 @@ public class PreferenceService {
                 preference.getRoomTemp(),
                 preference.getSleepTime()
         );
-    }
-
-    // 선호도 조회
-    public PreferenceResponseDTO getPreferences(Long userId) {
-        Preference preference = preferencesRepository.findByUserId(userId);
-
-        if (preference != null) {
-            // PreferenceResponseDTO로 변환하여 반환
-            return new PreferenceResponseDTO(
-                    preference.getId(),
-                    preference.getUser().getId(),  // userId
-                    preference.getCleanliness(),
-                    preference.getHeight(),
-                    preference.getNoiseSensitivity(),
-                    preference.getRoomTemp(),
-                    preference.getSleepTime()
-            );
-        } else {
-            throw new IllegalArgumentException("선호도를 찾을 수 없습니다.");
-        }
     }
 }

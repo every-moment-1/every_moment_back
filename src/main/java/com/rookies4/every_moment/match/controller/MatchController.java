@@ -1,7 +1,6 @@
 package com.rookies4.every_moment.match.controller;
 
 import com.rookies4.every_moment.match.controller.dto.MatchResponseDTO;
-import com.rookies4.every_moment.entity.UserEntity;
 import com.rookies4.every_moment.match.entity.dto.MatchProposalDTO;
 import com.rookies4.every_moment.match.entity.Match;
 import com.rookies4.every_moment.match.repository.MatchRepository;
@@ -10,7 +9,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -64,6 +62,7 @@ public class MatchController {
                 "ACCEPTED",
                 "매칭이 수락되었습니다."
         );
+
         return ResponseEntity.ok(response);
     }
 
@@ -84,6 +83,7 @@ public class MatchController {
                 "REJECTED",
                 "매칭이 거절되었습니다."
         );
+
         return ResponseEntity.ok(response);
     }
 
@@ -116,6 +116,7 @@ public class MatchController {
                 "SWAP_REQUESTED",
                 "스왑 신청이 처리되었습니다."
         );
+
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
