@@ -7,6 +7,7 @@ import com.rookies4.every_moment.chat.repo.ChatRoomRepository;
 import com.rookies4.every_moment.entity.UserEntity;
 import com.rookies4.every_moment.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -30,13 +31,19 @@ public class ChatService {
         // 연관필드의 id로 조회
         return roomRepo.findByUserA_IdAndUserB_Id(aId, bId)
                 .orElseGet(() -> {
-                    // 빌더에는 UserEntity를 넣어야 함
-                    UserEntity a = userRepo.getReferenceById(aId);
-                    UserEntity b = userRepo.getReferenceById(bId);
-                    return roomRepo.save(ChatRoom.builder()
-                            .userA(a)
-                            .userB(b)
-                            .build());
+                    try {
+                        // 빌더에는 UserEntity를 넣어야 함
+                        UserEntity a = userRepo.getReferenceById(aId);
+                        UserEntity b = userRepo.getReferenceById(bId);
+                        return roomRepo.save(ChatRoom.builder()
+                                .userA(a)
+                                .userB(b)
+                                .build());
+                    } catch (DataIntegrityViolationException dup) {
+                        // 동시 생성 충돌 → 이미 만들어진 방 재조회
+                        return roomRepo.findByUserA_IdAndUserB_Id(aId, bId)
+                                .orElseThrow(() -> dup);
+                    }
                 });
     }
 

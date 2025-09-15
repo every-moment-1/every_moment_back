@@ -2,9 +2,10 @@ package com.rookies4.every_moment.controller;
 
 import com.rookies4.every_moment.controller.dto.AuthDTO;
 import com.rookies4.every_moment.entity.UserEntity;
-import com.rookies4.every_moment.exception.BaseResponse;
 import com.rookies4.every_moment.entity.dto.UserDTO;
+import com.rookies4.every_moment.exception.BaseResponse;
 import com.rookies4.every_moment.match.repository.MatchResultRepository;
+import com.rookies4.every_moment.match.repository.PreferenceRepository;
 import com.rookies4.every_moment.match.repository.SurveyResultRepository;
 import com.rookies4.every_moment.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -22,29 +23,40 @@ public class UserController {
 
     private final UserService userService;
 
+    // [ADDED] 설문/매칭 상태 계산을 위해 주입
     private final SurveyResultRepository surveyResultRepository; // [ADDED]
     private final MatchResultRepository matchResultRepository; // [ADDED]
 
+    // 현재 사용자 정보 조회
     @GetMapping("/user")
     public ResponseEntity<BaseResponse<UserDTO>> me(Authentication auth) {
-        var u = userService.getCurrentUser(auth);
-        var res = new UserDTO(u.getId(), u.getUsername(), u.getGender(), u.getEmail(), u.getSmoking(), u.getRole(), u.getActive(), u.getCreatedAt().toString());
-        return ResponseEntity.ok(BaseResponse.ok(res));
+        UserEntity user = userService.getCurrentUser(auth);
+        var dto = new UserDTO(
+                user.getId(), user.getUsername(), user.getGender(),
+                user.getEmail(), user.getSmoking(),
+                user.getRole(), user.getActive(),
+                user.getCreatedAt() != null ? user.getCreatedAt().toString() : null
+        );
+        return ResponseEntity.ok(BaseResponse.ok(dto));
     }
 
+    // 사용자명 변경
     @PutMapping("/user")
     public ResponseEntity<BaseResponse<UserDTO>> updateUsername(
             Authentication auth,
             @RequestBody AuthDTO.UpdateUserRequest req) {
 
-        var user = userService.getCurrentUser(auth);
+        UserEntity user = userService.getCurrentUser(auth);
         userService.updateUsername(user, req.username());
-        var updated = new UserDTO(user.getId(), user.getUsername(), user.getGender(),
+        var updated = new UserDTO(
+                user.getId(), user.getUsername(), user.getGender(),
                 user.getEmail(), user.getSmoking(),
                 user.getRole(), user.getActive(),
-                user.getCreatedAt().toString());
+                user.getCreatedAt() != null ? user.getCreatedAt().toString() : null
+        );
         return ResponseEntity.ok(BaseResponse.ok(updated));
     }
+
     @GetMapping("/user/status")
     public ResponseEntity<BaseResponse<Map<String, Object>>> getMyStatus(Authentication auth) {
         UserEntity user = userService.getCurrentUser(auth);
