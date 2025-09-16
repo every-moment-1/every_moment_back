@@ -193,7 +193,7 @@ public class MatchResultService {
         allSimilarities.add(new SimilarityResult(noiseSensitivitySimilarity, "소음 민감도 차이: " + noiseSensitivitySimilarity.toPlainString()));
 
         BigDecimal heightSimilarity = new BigDecimal(1 - Math.abs(userSurveyResult.getHeight() - matchUserSurveyResult.getHeight()) / 3.0).setScale(2, RoundingMode.HALF_UP);
-        allSimilarities.add(new SimilarityResult(heightSimilarity, "키 유사: " + heightSimilarity.toPlainString()));
+        allSimilarities.add(new SimilarityResult(heightSimilarity, "층고 유사: " + heightSimilarity.toPlainString()));
 
         BigDecimal roomTempSimilarity = new BigDecimal(1 - Math.abs(userSurveyResult.getRoomTemp() - matchUserSurveyResult.getRoomTemp()) / 3.0).setScale(2, RoundingMode.HALF_UP);
         allSimilarities.add(new SimilarityResult(roomTempSimilarity, "방 온도 유사: " + roomTempSimilarity.toPlainString()));
