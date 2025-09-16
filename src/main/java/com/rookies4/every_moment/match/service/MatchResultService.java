@@ -73,6 +73,15 @@ public class MatchResultService {
     // 매칭 결과 DTO 생성 후 반환 (저장 포함)
     @Transactional
     public MatchResultDTO getMatchResult(Long userId, Long matchUserId) {
+        // 1. 이미 저장된 매칭 결과가 있는지 확인
+        Optional<MatchResult> existingResult = matchResultRepository.findByUser_IdAndMatchUser_Id(userId, matchUserId);
+
+        if (existingResult.isPresent()) {
+            // 2. 기존 결과가 있다면, 새로운 저장 없이 바로 DTO로 변환하여 반환
+            return toDtoFromEntity(existingResult.get());
+        }
+
+        // 3. 기존 결과가 없다면, 새로운 결과를 저장
         SurveyResult userSurveyResult = surveyService.getSurveyResult(userId);
         SurveyResult matchUserSurveyResult = surveyService.getSurveyResult(matchUserId);
 
@@ -80,7 +89,7 @@ public class MatchResultService {
         MatchResultDTO calculatedResult = generateMatchReasons(userSurveyResult, matchUserSurveyResult);
 
         // 임시 룸 배정 정보
-        String roomAssignment = "A동 304호 (DOUBLE)";
+        String roomAssignment = "방 번호를 입력해주세요";
         String roommateName = "익명";
 
         // 매칭 결과 저장

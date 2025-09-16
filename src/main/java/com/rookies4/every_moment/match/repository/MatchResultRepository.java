@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface MatchResultRepository extends JpaRepository<MatchResult, Long> {
@@ -40,4 +41,6 @@ public interface MatchResultRepository extends JpaRepository<MatchResult, Long> 
         ORDER BY mr.created_at DESC
         """, nativeQuery = true)
     List<MatchResult> findAllCurrent();
+
+    Optional<MatchResult> findByUser_IdAndMatchUser_Id(Long userId, Long matchUserId);
 }
