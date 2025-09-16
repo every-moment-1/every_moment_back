@@ -12,7 +12,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,25 +30,26 @@ public class MatchResultService {
     // 나의 매칭 상태 확인 (matchId, status만 반환)
     public List<MatchResultDTO> getSelfMatchResult(Long userId) {
         // 사용자와 관련된 모든 매칭을 가져옴
-        List<MatchResult> matchResults = matchResultRepository.findByUserId(userId);
+        List<Match> matches = matchRepository.findByUser1_IdOrUser2_Id(userId);  // user1_id 또는 user2_id가 userId인 모든 매칭을 가져옴
 
         // 매칭 결과가 존재하는 경우
-        if (!matchResults.isEmpty()) {
+        if (!matches.isEmpty()) {
             List<MatchResultDTO> matchResultDTOList = new ArrayList<>();
 
             // 매칭 상태별로 처리
-            for (MatchResult matchResult : matchResults) {
-                String status = matchResult.getStatus().name();  // 매칭 상태
+            for (Match match : matches) {
+                String status = match.getStatus().name();  // 매칭 상태
+                Long matchId = match.getId();  // 매칭 ID
 
                 // 상태에 따라 DTO 생성
                 matchResultDTOList.add(new MatchResultDTO(
-                        matchResult.getId(),
+                        matchId,  // 매칭 ID
                         null,  // 룸 배정은 null로 처리
                         null,  // 룸메이트 이름은 null로 처리
                         null,  // 선호도 점수는 null로 처리
                         null,  // 매칭 이유는 null로 처리
-                        matchResult.getMatch() != null ? String.valueOf(matchResult.getMatch().getId()) : "UNKNOWN",  // 매칭 ID 가져오기
-                        status  // 상태 추가
+                        String.valueOf(matchId),  // 매칭 ID를 문자열로 반환
+                        status  // 상태
                 ));
             }
             return matchResultDTOList;
@@ -90,11 +94,8 @@ public class MatchResultService {
         SurveyResult userSurveyResult = surveyService.getSurveyResult(userId);
         SurveyResult matchUserSurveyResult = surveyService.getSurveyResult(matchUserId);
 
-        // 매칭 점수 계산
-        double score = matchScorerService.calculateScore(userSurveyResult, matchUserSurveyResult);
-
-        // 매칭 이유 Top 3 계산
-        List<String> matchReasons = generateMatchReasons(userSurveyResult, matchUserSurveyResult);
+        // 매칭 점수 계산 및 매칭 이유 생성
+        MatchResultDTO matchResultDTO = generateMatchReasons(userSurveyResult, matchUserSurveyResult);
 
         // 룸 배정 정보 (예: "A동 304호 (DOUBLE)" 등)
         String roomAssignment = "A동 304호 (DOUBLE)"; // 예시로 고정 배정 (나중에 로직으로 처리 가능)
@@ -103,7 +104,7 @@ public class MatchResultService {
         String roommateName = "익명";
 
         // 매칭 결과 DB에 저장
-        MatchResult matchResult = saveMatchResult(userId, matchUserId, score, roomAssignment, roommateName, matchReasons);
+        MatchResult matchResult = saveMatchResult(userId, matchUserId, matchResultDTO.getScore(), roomAssignment, roommateName, matchResultDTO.getMatchReasons());
 
         // 상태 가져오기
         String status = matchResult.getMatch().getStatus().name(); // Match 상태 가져오기
@@ -116,13 +117,14 @@ public class MatchResultService {
                 matchResult.getId(),
                 roomAssignment,
                 roommateName,
-                score,
-                matchReasons,
+                matchResultDTO.getScore(),  // 매칭 점수
+                matchResultDTO.getMatchReasons(),  // 매칭 이유
                 matchId,  // matchId를 직접 가져옴
                 status   // 상태를 직접 가져옴
         );
     }
 
+    //MatchResult 객체를 DB에 저장
     private MatchResult saveMatchResult(Long userId, Long matchUserId, double score, String roomAssignment, String roommateName, List<String> matchReasons) {
         // 사용자와 매칭된 Match 객체를 찾습니다.
         List<Match> matches = matchRepository.findByUser1IdAndUser2Id(userId, matchUserId);
@@ -156,29 +158,76 @@ public class MatchResultService {
         return matchResultRepository.save(matchResult);
     }
 
-    // 매칭 이유 생성
-    public List<String> generateMatchReasons(SurveyResult userSurveyResult, SurveyResult matchUserSurveyResult) {
-        List<String> reasons = new ArrayList<>();
-        double sleepTimeSimilarity = 1 - Math.abs(userSurveyResult.getSleepTime() - matchUserSurveyResult.getSleepTime()) / 3.0;
-        reasons.add("취침/기상 유사: " + String.format("%.2f", sleepTimeSimilarity));
 
-        double cleanlinessSimilarity = 1 - Math.abs(userSurveyResult.getCleanliness() - matchUserSurveyResult.getCleanliness()) / 4.0;
-        reasons.add("청결도 유사: " + String.format("%.2f", cleanlinessSimilarity));
+    //매칭이유 상위 3개 생성 및 상위 3개 평균 결과값 반환(100점만점)
+    public MatchResultDTO generateMatchReasons(SurveyResult userSurveyResult, SurveyResult matchUserSurveyResult) {
+        // 점수와 이유를 묶어서 관리하는 클래스
+        class SimilarityResult {
+            private final BigDecimal score;
+            private final String reason;
 
-        double noiseSensitivitySimilarity = 1 - Math.abs(userSurveyResult.getNoiseSensitivity() - matchUserSurveyResult.getNoiseSensitivity()) / 3.0;
-        reasons.add("소음 민감도 차이: " + String.format("%.2f", noiseSensitivitySimilarity));
+            public SimilarityResult(BigDecimal score, String reason) {
+                this.score = score;
+                this.reason = reason;
+            }
 
-        double heightSimilarity = 1 - Math.abs(userSurveyResult.getHeight() - matchUserSurveyResult.getHeight()) / 3.0;
-        reasons.add("키 유사: " + String.format("%.2f", heightSimilarity));
+            public BigDecimal getScore() {
+                return score;
+            }
 
-        double roomTempSimilarity = 1 - Math.abs(userSurveyResult.getRoomTemp() - matchUserSurveyResult.getRoomTemp()) / 3.0;
-        reasons.add("방 온도 유사: " + String.format("%.2f", roomTempSimilarity));
+            public String getReason() {
+                return reason;
+            }
+        }
 
-        reasons.sort((r1, r2) -> Double.compare(
-                Double.parseDouble(r2.split(": ")[1]),
-                Double.parseDouble(r1.split(": ")[1])
-        ));
+        List<SimilarityResult> allSimilarities = new ArrayList<>();
 
-        return reasons.subList(0, 3); // 상위 3개 항목
+        // 1. 각 유사도 점수를 계산하고, 소수점 둘째 자리에서 반올림
+        BigDecimal sleepTimeSimilarity = new BigDecimal(1 - Math.abs(userSurveyResult.getSleepTime() - matchUserSurveyResult.getSleepTime()) / 3.0).setScale(2, RoundingMode.HALF_UP);
+        allSimilarities.add(new SimilarityResult(sleepTimeSimilarity, "취침/기상 유사: " + sleepTimeSimilarity.toPlainString()));
+
+        BigDecimal cleanlinessSimilarity = new BigDecimal(1 - Math.abs(userSurveyResult.getCleanliness() - matchUserSurveyResult.getCleanliness()) / 4.0).setScale(2, RoundingMode.HALF_UP);
+        allSimilarities.add(new SimilarityResult(cleanlinessSimilarity, "청결도 유사: " + cleanlinessSimilarity.toPlainString()));
+
+        BigDecimal noiseSensitivitySimilarity = new BigDecimal(1 - Math.abs(userSurveyResult.getNoiseSensitivity() - matchUserSurveyResult.getNoiseSensitivity()) / 3.0).setScale(2, RoundingMode.HALF_UP);
+        allSimilarities.add(new SimilarityResult(noiseSensitivitySimilarity, "소음 민감도 차이: " + noiseSensitivitySimilarity.toPlainString()));
+
+        BigDecimal heightSimilarity = new BigDecimal(1 - Math.abs(userSurveyResult.getHeight() - matchUserSurveyResult.getHeight()) / 3.0).setScale(2, RoundingMode.HALF_UP);
+        allSimilarities.add(new SimilarityResult(heightSimilarity, "키 유사: " + heightSimilarity.toPlainString()));
+
+        BigDecimal roomTempSimilarity = new BigDecimal(1 - Math.abs(userSurveyResult.getRoomTemp() - matchUserSurveyResult.getRoomTemp()) / 3.0).setScale(2, RoundingMode.HALF_UP);
+        allSimilarities.add(new SimilarityResult(roomTempSimilarity, "방 온도 유사: " + roomTempSimilarity.toPlainString()));
+
+        // 2. 반올림된 점수를 내림차순 정렬
+        allSimilarities.sort(Comparator.comparing(SimilarityResult::getScore).reversed());
+
+        // 3. 상위 3개 항목만 선택
+        List<SimilarityResult> top3Similarities = allSimilarities.stream()
+                .limit(3)
+                .collect(Collectors.toList());
+
+        // 4. 반올림된 상위 3개 점수를 사용해 최종 점수 계산
+        BigDecimal sum = top3Similarities.stream()
+                .map(SimilarityResult::getScore)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal finalScore = sum.divide(new BigDecimal("3"), 4, RoundingMode.HALF_UP)
+                .multiply(new BigDecimal("100"))
+                .setScale(2, RoundingMode.HALF_UP);
+
+        // 상위 3개 이유만 반환
+        List<String> matchReasons = top3Similarities.stream()
+                .map(SimilarityResult::getReason)
+                .collect(Collectors.toList());
+
+        return new MatchResultDTO(
+                null,
+                null,
+                null,
+                finalScore.doubleValue(),
+                matchReasons,
+                null,
+                null
+        );
     }
 }
