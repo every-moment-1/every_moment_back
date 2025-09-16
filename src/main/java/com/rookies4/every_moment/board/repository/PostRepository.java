@@ -22,10 +22,10 @@ public interface PostRepository extends JpaRepository<PostEntity, Long> {
     // ✅ 삭제되지 않은 게시글만 조회
     List<PostEntity> findByDeletedFalse();
 
-    // ✅ 목록: DTO 프로젝션
+    // ✅ 목록: DTO 프로젝션 (status 포함)
     @Query("""
       select new com.rookies4.every_moment.board.dto.PostListItem(
-        p.id, p.category, p.title, p.createdAt, a.username
+        p.id, p.category, p.title, p.createdAt, a.username, p.status
       )
       from PostEntity p
       join p.author a

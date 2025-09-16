@@ -15,7 +15,8 @@ import java.util.List;
 @Table(name = "posts",
         indexes = {
                 @Index(name = "idx_posts_category", columnList = "category"),
-                @Index(name = "idx_posts_author", columnList = "author_id")
+                @Index(name = "idx_posts_author", columnList = "author_id"),
+                @Index(name = "idx_posts_status", columnList = "status")
         })
 @EntityListeners(AuditingEntityListener.class)
 @Getter @Setter @Builder
@@ -31,7 +32,7 @@ public class PostEntity {
     private UserEntity author;
 
     @Column(nullable = false, length = 20)
-    private String category;   // FREE / NOTICE / MATCH / ETC
+    private String category;   // FREE / NOTICE / MATCH / FIND
 
     @Column(nullable = false, length = 200)
     private String title;
@@ -47,6 +48,9 @@ public class PostEntity {
     @Builder.Default
     @Column(nullable = false)
     private Boolean deleted = false;
+
+    @Column(nullable = false, length = 20)
+    private String status;   // NORMAL / SWAP_REQUEST / SWAP_APPROVED / SWAP_REJECTED
 
     @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)

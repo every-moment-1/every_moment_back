@@ -11,7 +11,8 @@ import java.time.Instant;
 @Entity @Table(name="chat_message")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class ChatMessage {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     // JSON 변환 시 이 필드를 무시하도록 설정

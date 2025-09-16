@@ -21,7 +21,7 @@ public class EveryMomentApplication {
             if (users.findByEmail("admin@example.com").isEmpty()) {
                 users.save(UserEntity.builder()
                         .username("admin")
-                        .gender(0) // 성추가
+                        .gender(0)
                         .email("admin@example.com")
                         .passwordHash(encoder.encode("AdminPassw0rd!"))
                         .role("ROLE_ADMIN")
