@@ -37,10 +37,10 @@ public class PostService {
     }
 
     private boolean isNotice(String category) {
-        return "NOTICE".equalsIgnoreCase(String.valueOf(category));
+        return "NOTICE".equalsIgnoreCase(category);
     }
 
-    // 게시글 작성 (공지 NOTICE는 관리자만)
+    // 게시글 작성
     @Transactional
     public PostEntity createPost(PostEntity post, UserEntity author) {
         if (post.getCategory() == null || !ALLOWED.contains(post.getCategory())) {
@@ -49,14 +49,21 @@ public class PostService {
         if (isNotice(post.getCategory()) && !isAdmin(author)) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "공지 작성 권한이 없습니다.");
         }
+
         post.setAuthor(author);
+
+        // status는 프론트에서 지정한 값(SWAP_REQUEST 등)을 그대로 저장
+        if (post.getStatus() == null || post.getStatus().isBlank()) {
+            post.setStatus("NORMAL");
+        }
+
         return postRepository.save(post);
     }
 
-    // 게시글 목록 조회 (카테고리 기준)
+    // 게시글 목록 조회
     @Transactional(readOnly = true)
     public List<PostListItem> listByCategory(String category) {
-        return postRepository.findListByCategory(category); // DTO 프로젝션
+        return postRepository.findListByCategory(category);
     }
 
     // 단일 게시글 조회
@@ -67,40 +74,53 @@ public class PostService {
 
         var comments = commentRepository.findByPostIdWithAuthor(id).stream()
                 .map(c -> new CommentItem(
-                        c.getId(), c.getContent(),
-                        c.getAuthor().getId(), c.getAuthor().getUsername(), c.getCreatedAt()
+                        c.getId(),
+                        c.getContent(),
+                        c.getAuthor().getId(),
+                        c.getAuthor().getUsername(),
+                        c.getCreatedAt()
                 ))
                 .toList();
 
         return new PostDetail(
-                p.getId(), p.getCategory(), p.getTitle(), p.getContent(),
-                p.getCreatedAt(), p.getUpdatedAt(), p.getAuthor().getId(), p.getAuthor().getUsername(), comments
+                p.getId(),
+                p.getCategory(),
+                p.getTitle(),
+                p.getContent(),
+                p.getCreatedAt(),
+                p.getUpdatedAt(),
+                p.getAuthor().getId(),
+                p.getAuthor().getUsername(),
+                p.getStatus(),
+                comments
         );
     }
 
-    // (내부 전용) 엔티티 로딩 – 댓글 등에서 필요할 때만 사용
+    // 엔티티 로딩
     @Transactional(readOnly = true)
     public PostEntity getPostEntity(Long id) {
         return postRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("게시글을 찾을 수 없습니다: " + id));
     }
 
-    // 삭제(Soft delete): 작성자 또는 관리자만
+    // 삭제
     @Transactional
     public void deletePost(Long id, UserEntity actor) {
         var post = getPostEntity(id);
         boolean owner = isOwner(post, actor);
         boolean admin = isAdmin(actor);
+
         if (!owner && !admin) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "삭제 권한이 없습니다.");
         }
+
         post.setDeleted(true);
         postRepository.save(post);
     }
 
-    // 수정: 작성자 또는 관리자만 (+ NOTICE로 변경은 관리자만)
+    // 수정
     @Transactional
-    public PostDetail update(Long id, String title, String content, String category, UserEntity editor) {
+    public PostDetail update(Long id, String title, String content, String category, String status, UserEntity editor) {
         var p = getPostEntity(id);
 
         if (Boolean.TRUE.equals(p.getDeleted())) {
@@ -109,28 +129,50 @@ public class PostService {
 
         boolean owner = isOwner(p, editor);
         boolean admin = isAdmin(editor);
+
         if (!owner && !admin) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "수정 권한이 없습니다.");
         }
 
-        if (title != null && !title.isBlank()) {
-            p.setTitle(title);
-        }
-        if (content != null && !content.isBlank()) {
-            p.setContent(content);
-        }
+        if (title != null && !title.isBlank()) p.setTitle(title);
+        if (content != null && !content.isBlank()) p.setContent(content);
+
         if (category != null && !category.isBlank()) {
             if (!ALLOWED.contains(category)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "잘못된 카테고리: " + category);
             }
-            // 공지로 변경은 관리자만 허용
             if (isNotice(category) && !admin) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "공지로 변경할 권한이 없습니다.");
             }
             p.setCategory(category);
         }
 
-        // @LastModifiedDate 로 updatedAt 자동 갱신
+        if (status != null && !status.isBlank()) {
+            p.setStatus(status);
+        }
+
         return detail(id);
+    }
+
+    // 관리자 승인 → 매칭 가능
+    @Transactional
+    public PostDetail approveSwap(Long postId, UserEntity admin) {
+        if (!isAdmin(admin)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "관리자 권한 필요");
+        }
+        var post = getPostEntity(postId);
+        post.setStatus("SWAP_APPROVED");
+        return detail(postId);
+    }
+
+    // 관리자 거절 → 매칭 불가
+    @Transactional
+    public PostDetail rejectSwap(Long postId, UserEntity admin) {
+        if (!isAdmin(admin)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "관리자 권한 필요");
+        }
+        var post = getPostEntity(postId);
+        post.setStatus("SWAP_REJECTED");
+        return detail(postId);
     }
 }

@@ -8,6 +8,7 @@ import com.rookies4.every_moment.match.repository.MatchResultRepository;
 import com.rookies4.every_moment.match.repository.PreferenceRepository;
 import com.rookies4.every_moment.match.repository.SurveyResultRepository;
 import com.rookies4.every_moment.service.UserService;
+import jakarta.annotation.security.PermitAll;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -85,5 +86,19 @@ public class UserController {
         map.put("surveyDone", surveyDone);
         map.put("matchStatus", matchStatus);
         return ResponseEntity.ok(BaseResponse.ok(map));
+    }
+
+    // 특정 사용자 조회: gender(0/1), smoking(Boolean) 포함
+    @PermitAll
+    @GetMapping("/users/{id}")
+    public ResponseEntity<BaseResponse<UserDTO>> getUserById(@PathVariable Long id) {
+        UserEntity user = userService.getByIdOrThrow(id);
+        var dto = new UserDTO(
+                user.getId(), user.getUsername(), user.getGender(),
+                user.getEmail(), user.getSmoking(),
+                user.getRole(), user.getActive(),
+                user.getCreatedAt() != null ? user.getCreatedAt().toString() : null
+        );
+        return ResponseEntity.ok(BaseResponse.ok(dto));
     }
 }

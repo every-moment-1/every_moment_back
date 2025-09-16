@@ -28,11 +28,9 @@ public class ChatService {
         Long aId = Math.min(me, opponent);
         Long bId = Math.max(me, opponent);
 
-        // 연관필드의 id로 조회
         return roomRepo.findByUserA_IdAndUserB_Id(aId, bId)
                 .orElseGet(() -> {
                     try {
-                        // 빌더에는 UserEntity를 넣어야 함
                         UserEntity a = userRepo.getReferenceById(aId);
                         UserEntity b = userRepo.getReferenceById(bId);
                         return roomRepo.save(ChatRoom.builder()
@@ -40,7 +38,6 @@ public class ChatService {
                                 .userB(b)
                                 .build());
                     } catch (DataIntegrityViolationException dup) {
-                        // 동시 생성 충돌 → 이미 만들어진 방 재조회
                         return roomRepo.findByUserA_IdAndUserB_Id(aId, bId)
                                 .orElseThrow(() -> dup);
                     }
@@ -52,7 +49,7 @@ public class ChatService {
         UserEntity sender = userRepo.getReferenceById(senderId);
         return msgRepo.save(ChatMessage.builder()
                 .room(room)
-                .sender(sender)     // ← UserEntity
+                .sender(sender)
                 .content(content)
                 .build());
     }
@@ -70,8 +67,38 @@ public class ChatService {
         return room;
     }
 
+    /** ✅ 내 방 목록 (참여자까지 fetch 조인된 버전 사용) */
     @Transactional(readOnly = true)
     public List<ChatRoom> getUserChatRooms(Long userId) {
-        return roomRepo.findByParticipantId(userId);
+        return roomRepo.findByParticipantIdWithUsers(userId);
+    }
+
+    /** (기존 유지) 전체 방 - 단순 버전(필요 시 사용) */
+    @Transactional(readOnly = true)
+    public List<ChatRoom> getAllRooms() {
+        return roomRepo.findAll();
+    }
+
+    /** ✅ 전체 방 (참여자까지 함께 로드) */
+    @Transactional(readOnly = true)
+    public List<ChatRoom> getAllRoomsWithUsers() {
+        return roomRepo.findAllWithUsers();
+    }
+
+    /** ✅ 단건 조회도 참여자 함께 로드 */
+    @Transactional(readOnly = true)
+    public ChatRoom getRoomWithUsers(Long roomId) {
+        return roomRepo.findByIdWithUsers(roomId).orElseThrow();
+    }
+
+    /** ✅ 관리자 여부(DB 기준) */
+    @Transactional(readOnly = true)
+    public boolean isAdminUser(Long userId) {
+        return userRepo.findById(userId)
+                .map(u -> {
+                    String name = String.valueOf(u.getRole());
+                    return "ADMIN".equalsIgnoreCase(name) || "ROLE_ADMIN".equalsIgnoreCase(name);
+                })
+                .orElse(false);
     }
 }

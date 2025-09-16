@@ -20,6 +20,13 @@ public class UserService {
         return users.findByEmail(email).orElseThrow();
     }
 
+    /** ✅ id로 사용자 조회 (없으면 IllegalArgumentException) */
+    @Transactional(readOnly = true)
+    public UserEntity getByIdOrThrow(Long id) {
+        return users.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + id));
+    }
+
     /**
      * 사용자 이름(username) 수정
      */

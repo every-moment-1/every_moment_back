@@ -12,5 +12,6 @@ public record PostDetail(
         LocalDateTime updatedAt,
         Long authorId,
         String authorName,
+        String status,
         List<CommentItem> comments
 ) {}

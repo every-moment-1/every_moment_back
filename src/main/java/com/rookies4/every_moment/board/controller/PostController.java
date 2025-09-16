@@ -22,7 +22,7 @@ public class PostController {
     private final PostService postService;
     private final UserService userService;
 
-    // 글 작성: 요청 DTO → 엔티티 변환 후 저장, 응답은 id만 반환 (엔티티 직렬화 방지)
+    // 글 작성
     @PostMapping
     public ResponseEntity<CreateRes> createPost(@RequestBody CreateReq req, Authentication auth) {
         UserEntity user = userService.getCurrentUser(auth);
@@ -31,6 +31,7 @@ public class PostController {
                 .category(req.category())
                 .title(req.title())
                 .content(req.content())
+                .status(req.status() != null ? req.status() : "NORMAL")
                 .build();
 
         PostEntity saved = postService.createPost(toSave, user);
@@ -38,27 +39,27 @@ public class PostController {
         return ResponseEntity.created(location).body(new CreateRes(saved.getId()));
     }
 
-    // 목록: DTO로 반환 (직렬화 안전)
+    // 목록
     @GetMapping
     public List<PostListItem> getPosts(@RequestParam(defaultValue = "FREE") String category) {
         return postService.listByCategory(category);
     }
 
-    // 상세: DTO로 반환 (직렬화 안전)
+    // 상세
     @GetMapping("/{id}")
     public PostDetail getPost(@PathVariable Long id) {
         return postService.detail(id);
     }
 
-    // 삭제: 204 No Content
+    // 삭제
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePost(@PathVariable Long id, Authentication auth) {
         UserEntity me = userService.getCurrentUser(auth);
-        postService.deletePost(id, me);   // ✅ actor 전달
+        postService.deletePost(id, me);
         return ResponseEntity.noContent().build();
     }
 
-    // ✅ 글 수정 (부분 수정: 제목/내용/카테고리 중 보내준 것만 반영)
+    // 수정
     @PatchMapping("/{id}")
     public PostDetail updatePost(
             @PathVariable Long id,
@@ -66,12 +67,25 @@ public class PostController {
             Authentication auth
     ) {
         UserEntity user = userService.getCurrentUser(auth);
-        return postService.update(id, req.title(), req.content(), req.category(), user);
+        return postService.update(id, req.title(), req.content(), req.category(), req.status(), user);
+    }
+
+    // ✅ 관리자 승인
+    @PostMapping("/{id}/approve")
+    public PostDetail approveSwap(@PathVariable Long id, Authentication auth) {
+        UserEntity admin = userService.getCurrentUser(auth);
+        return postService.approveSwap(id, admin);
+    }
+
+    // ✅ 관리자 거절
+    @PostMapping("/{id}/reject")
+    public PostDetail rejectSwap(@PathVariable Long id, Authentication auth) {
+        UserEntity admin = userService.getCurrentUser(auth);
+        return postService.rejectSwap(id, admin);
     }
 
     // ===== 요청/응답 DTO =====
-    public record CreateReq(String category, String title, String content) {}
+    public record CreateReq(String category, String title, String content, String status) {}
     public record CreateRes(Long id) {}
-    // ✅ 수정 바디용 DTO (보내준 필드만 수정)
-    public record UpdateReq(String title, String content, String category) {}
+    public record UpdateReq(String title, String content, String category, String status) {}
 }
