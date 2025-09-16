@@ -33,4 +33,16 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
     // 사용자 1과 사용자 2의 ID로 매칭을 조회하는 메서드
     @Query("SELECT m FROM Match m WHERE (m.user1.id = :userId AND m.user2.id = :matchUserId) OR (m.user1.id = :matchUserId AND m.user2.id = :userId)")
     List<Match> findByUser1IdAndUser2Id(@Param("userId") Long userId, @Param("matchUserId") Long matchUserId);
+
+    // 사용자 1이 매칭된 상태인지 확인하는 메서드 (ACCEPTED 상태)
+    @Query("SELECT COUNT(m) > 0 FROM Match m WHERE (m.user1.id = :userId OR m.user2.id = :userId) AND m.status = :status")
+    boolean existsByUserAndStatus(@Param("userId") Long userId, @Param("status") MatchStatus status);
+
+    // 사용자 1이 매칭된 상태인지 확인하는 메서드 (ACCEPTED 상태)
+    @Query("SELECT COUNT(m) > 0 FROM Match m WHERE m.user1.id = :targetUserId AND m.status = :matchStatus")
+    boolean existsByUser1AndStatus(@Param("targetUserId") Long targetUserId, @Param("matchStatus") MatchStatus matchStatus);
+
+    // 사용자 2가 매칭된 상태인지 확인하는 메서드 (ACCEPTED 상태)
+    @Query("SELECT COUNT(m) > 0 FROM Match m WHERE m.user2.id = :targetUserId AND m.status = :matchStatus")
+    boolean existsByUser2AndStatus(@Param("targetUserId") Long targetUserId, @Param("matchStatus") MatchStatus matchStatus);
 }

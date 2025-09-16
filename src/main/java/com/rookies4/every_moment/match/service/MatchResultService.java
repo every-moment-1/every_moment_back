@@ -104,7 +104,7 @@ public class MatchResultService {
         String roommateName = "익명";
 
         // 매칭 결과 DB에 저장
-        MatchResult matchResult = saveMatchResult(userId, matchUserId, matchResultDTO.getScore(), roomAssignment, roommateName, matchResultDTO.getMatchReasons());
+        MatchResult matchResult = saveMatchResult(userId, matchUserId, matchResultDTO.getPreferenceScore(), roomAssignment, roommateName, matchResultDTO.getMatchReasons());
 
         // 상태 가져오기
         String status = matchResult.getMatch().getStatus().name(); // Match 상태 가져오기
@@ -117,7 +117,7 @@ public class MatchResultService {
                 matchResult.getId(),
                 roomAssignment,
                 roommateName,
-                matchResultDTO.getScore(),  // 매칭 점수
+                matchResultDTO.getPreferenceScore(),  // 매칭 점수
                 matchResultDTO.getMatchReasons(),  // 매칭 이유
                 matchId,  // matchId를 직접 가져옴
                 status   // 상태를 직접 가져옴
