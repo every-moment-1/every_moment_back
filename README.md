@@ -1,47 +1,137 @@
-# 🕒 Every Moment (모든 순간) - Backend
+# 🕒 Every Moment (모든 순간) Backend
 
-**모든 순간(Every Moment)**은 사용자의 성향과 설문을 바탕으로 최적의 인연을 연결하고, 실시간 소통을 지원하는 매칭 플랫폼의 백엔드 시스템입니다.
+사용자의 가치관 설문을 기반으로 최적의 인연을 연결하고, 실시간 소통과 커뮤니티 기능을 제공하는 Spring Boot 기반 매칭 플랫폼 백엔드 서버입니다.
 
-## 📝 프로젝트 개요
-사용자가 진행한 설문 조사 결과를 분석하여 개인화된 매칭 점수를 산출하고, 이를 기반으로 최적의 상대를 추천합니다. 또한 매칭된 사용자 간의 실시간 채팅 기능과 게시판 중심의 커뮤니티 서비스를 제공하여 유기적인 사용자 경험을 지원합니다.
+## 📋 목차
 
-## ✨ 핵심 기능 (Key Features)
+- [개요](#개요)
+- [기술 스택](#기술-스택)
+- [프로젝트 구조](#프로젝트-구조)
+- [주요 기능](#주요-기능)
+- [API 엔드포인트](#api-엔드포인트)
+- [설치 및 실행](#설치-및-실행)
+- [데이터베이스 설정](#데이터베이스-설정)
 
-### 1. 지능형 매칭 시스템
-* **사용자 성향 분석**: 설문(Survey) 데이터를 수집하고 사용자의 선호도(Preference)를 분석합니다.
-* **알고리즘 기반 추천**: 사용자 간의 매칭 점수를 산출하여 맞춤형 추천 목록을 제공합니다.
-* **매칭 결과 관리**: 매칭 수락/거절 상태를 실시간으로 관리하고 이력을 저장합니다.
+---
 
-### 2. 실시간 소통 서비스
-* **실시간 채팅**: WebSocket 및 STOMP를 활용하여 지연 없는 실시간 메시지 전송 시스템을 구축했습니다.
-* **채팅방 관리**: 1:1 채팅방 생성 및 메시지 이력 조회 기능을 제공합니다.
+## 개요
 
-### 3. 커뮤니티 (Board)
-* **게시글 및 댓글**: 사용자가 자유롭게 게시글을 작성하고 댓글을 달 수 있는 소셜 피드 환경을 지원합니다.
-* **활동 로그**: 시스템 내 주요 게시판 활동에 대한 로그를 기록하여 데이터를 관리합니다.
+**모든 순간(Every Moment)**은 단순한 외형적 조건을 넘어, 사용자가 진행한 설문 결과를 알고리즘으로 분석하여 정서적/가치관적 합치도가 높은 상대를 추천합니다. 매칭된 상대와의 실시간 STOMP 채팅과 자유로운 커뮤니티 활동을 통해 진정성 있는 관계 형성을 지원합니다.
 
-### 4. 보안 및 인증
-* **JWT 기반 인증**: 토큰 기반의 무상태(Stateless) 인증 아키텍처를 구현했습니다.
-* **인가 시스템**: Spring Security를 통해 엔드포인트별 권한을 설정하고 접근을 제어합니다.
+## 기술 스택
 
-## 🛠 기술 스택 (Tech Stack)
+| 구분 | 기술 |
+|------|------|
+| **Language** | Java 17 |
+| **Framework** | Spring Boot 3.2.5 |
+| **Database** | MySQL |
+| **ORM** | Spring Data JPA |
+| **Security** | Spring Security + JWT |
+| **Messaging** | Spring WebSocket (STOMP) |
+| **API Docs** | SpringDoc OpenAPI (Swagger UI) |
+| **Build Tool** | Maven |
+| **Migration** | Flyway |
 
-* **언어**: Java 17
-* **프레임워크**: Spring Boot 3.2.5
-* **데이터베이스**: MySQL
-* **지속성 프레임워크**: Spring Data JPA
-* **실시간 통신**: WebSocket, STOMP
-* **데이터 마이그레이션**: Flyway
-* **문서화**: Springdoc-openapi (Swagger)
+## 프로젝트 구조
 
-## 📂 프로젝트 구조 (Simplified)
 ```text
-com.rookies4.every_moment
-├── auth        # 인증 및 회원가입 관련 로직
-├── board       # 게시판 및 댓글 도메인
-├── chat        # 실시간 채팅 도메인
-├── match       # 매칭 알고리즘 및 선호도 분석
-└── security    # Security 및 JWT 설정
+com.rookies4.every_moment/
+├── auth/                           # 인증 및 회원가입 비즈니스 로직
+├── board/                          # 커뮤니티 게시판 도메인
+│   ├── controller/                 # 게시글, 댓글, 활동 로그 컨트롤러
+│   ├── entity/                     # PostEntity, CommentEntity, BoardLogEntity
+│   ├── repository/                 # JPA 데이터 접근 계층
+│   └── service/                    # 소셜 기능 핵심 로직
+├── chat/                           # 실시간 채팅 도메인
+│   ├── config/                     # WebSocket/STOMP 프로토콜 설정
+│   ├── controller/                 # 메시지 핸들링 및 채팅방 관리 API
+│   ├── domain/                     # ChatMessage, ChatRoom 엔티티
+│   └── service/                    # 메시지 전송 및 이력 관리
+├── config/                         # OpenAPI, CORS, JpaAuditing 설정
+├── match/                          # 매칭 알고리즘 도메인
+│   ├── controller/                 # 설문, 선호도, 추천 API
+│   ├── entity/                     # SurveyResult, MatchScores, MatchStatus
+│   └── service/                    # MatchScorer(점수 산출), Recommendation(추천)
+├── security/                       # JWT 필터 및 Spring Security 설정
+└── exception/                      # 전역 예외 처리(GlobalExceptionHandler)
+```
+
+---
+
+## ✨ 주요 기능
+
+### 🎯 지능형 매칭 시스템 (Intelligent Matching)
+* **성향 설문 수집**: 사용자 맞춤형 질문 세트를 통해 내면의 가치관 데이터를 수집합니다.
+* **매칭 점수 알고리즘**: 설문 결과와 상호 선호도를 분석하여 사용자 간 적합도 점수를 산출합니다.
+* **맞춤 추천**: 높은 합치도를 가진 상대를 우선적으로 노출하는 추천 목록을 제공합니다.
+
+### 💬 실시간 소통 서비스 (Real-time Interaction)
+* **STOMP 메시징**: WebSocket 기반의 양방향 통신으로 끊김 없는 대화 환경을 구현했습니다.
+* **채팅방 관리**: 1:1 매칭 완료 시 전용 채팅방을 자동 생성하며 대화 내역을 보존합니다.
+
+### 📝 인터랙티브 커뮤니티 (Community)
+* **피드 시스템**: 사용자들이 일상을 공유하고 소통할 수 있는 게시판 기능을 지원합니다.
+* **참여 로직**: 게시글에 대한 댓글 작성 및 시스템 전반의 주요 활동 로그를 기록합니다.
+
+### 🔐 보안 및 인증 (Security)
+* **JWT 아키텍처**: Access/Refresh 토큰 구조를 통해 보안성이 강화된 인증 시스템을 구축했습니다.
+* **권한 관리**: Spring Security를 활용하여 비인가 사용자의 민감 데이터 접근을 차단합니다.
+
+---
+
+## 🔗 API 엔드포인트
+
+### 인증 API (`/api/auth`)
+| Method | Endpoint | 설명 |
+|--------|----------|------|
+| POST | `/login` | 로그인 및 JWT 토큰 발행 |
+| POST | `/register` | 신규 사용자 가입 |
+| POST | `/refresh` | Access Token 갱신 |
+
+### 매칭 API (`/api/matches`)
+| Method | Endpoint | 설명 |
+|--------|----------|------|
+| POST | `/survey` | 성향 설문 데이터 제출 |
+| GET | `/recommendations` | 개인화된 추천 상대 목록 조회 |
+| POST | `/status` | 매칭 수락/거절 등 상태 변경 |
+
+### 게시판 API (`/api/board/posts`)
+| Method | Endpoint | 설명 |
+|--------|----------|------|
+| GET | `/` | 최신 게시글 목록 조회 |
+| POST | `/create` | 신규 게시글 작성 |
+| GET | `/{id}` | 게시글 상세 내용 및 댓글 조회 |
+
+---
+
+## ⚙️ 설치 및 실행
+
+### 사전 요구사항
+* **Java 17** 이상
+* **Maven 3.x**
+* **MySQL 8.0** 이상
+
+### 로컬 실행
+1. **저장소 클론**
+   ```bash
+   git clone [https://github.com/Every-Moment/every_moment_back.git](https://github.com/Every-Moment/every_moment_back.git)
+   cd every_moment_back
+
+2. **빌드**
+    ```bash
+    ./mvnw clean package
+    ```
+3. **실행**
+    ```
+    java -jar target/every_moment_back-0.0.1-SNAPSHOT.jar
+    ```
+
+## 💾 데이터베이스 설정
+src/main/resources/application.properties 파일에서 아래 정보를 프로젝트 환경에 맞춰 수정합니다.
+```
+spring.datasource.url=jdbc:mysql://localhost:3306/every_moment_db
+spring.datasource.username=your_username
+spring.datasource.password=your_password
 ```
 
 ---
